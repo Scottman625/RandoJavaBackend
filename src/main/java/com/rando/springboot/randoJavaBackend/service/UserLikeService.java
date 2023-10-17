@@ -25,17 +25,14 @@ public class UserLikeService {
     private UserRepository userRepository;
 
     public void importUserLike(){
-        for (int i = 200; i <= 300; i++){
-            UserLike userLike = new UserLike();
-            String string = String.valueOf(i);
-            String phone = "0910000000";
-            phone = phone.substring(0, phone.length() - string.length()) + string;
-            Optional<User> userOptional = userRepository.findByPhone(phone);
-            User user = userOptional.get();
-            userLike.setUser(user);
-            userLike.setLikedUser(userRepository.findById(1));
-            userLike.setLikeStatus(true);
-            userLikeRepository.save(userLike);
+        for (int i = 200; i <= 400; i += 4){
+            for (int j = 3; j <= 200; j += 3){
+                UserLike userLike = new UserLike();
+                userLike.setUser(userRepository.findById(i));
+                userLike.setLikedUser(userRepository.findById(j));
+                userLike.setLikeStatus(true);
+                saveUserLike(userLike);
+            }
         }
     }
 

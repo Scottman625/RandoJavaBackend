@@ -1,12 +1,8 @@
 package com.rando.springboot.randoJavaBackend.entity;
 
-import com.rando.springboot.randoJavaBackend.dao.ChatroomMessageRepository;
 import jakarta.persistence.*;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.Date;
-import java.util.List;
-
+import java.time.LocalDateTime;
 @Entity
 @Table(name = "chatroom_message")
 public class ChatroomMessage {
@@ -32,7 +28,7 @@ public class ChatroomMessage {
 
     @Column(name = "create_at")
     @Temporal(TemporalType.TIMESTAMP)
-    private Date createAt;
+    private LocalDateTime createAt;
 
     // Assuming a String representation for the image URL after upload.
     @Column(name = "image")
@@ -86,11 +82,11 @@ public class ChatroomMessage {
         this.content = content;
     }
 
-    public Date getCreateAt() {
+    public LocalDateTime getCreateAt() {
         return createAt;
     }
 
-    public void setCreateAt(Date createAt) {
+    public void setCreateAt(LocalDateTime createAt) {
         this.createAt = createAt;
     }
 

@@ -34,8 +34,8 @@ public class RandoJavaBackendApplication {
 //			userService.updateUser();
 //			userLikeService.importUserLike();
 //			importService.importCareer();
-			importService.importUserMatch();
-			importService.importChatRoom();
+//			importService.importUserMatch();
+//			importService.importChatRoom();
 
 		};
 	}

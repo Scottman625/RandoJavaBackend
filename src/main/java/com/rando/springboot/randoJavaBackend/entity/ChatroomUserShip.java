@@ -23,6 +23,10 @@ public class ChatroomUserShip {
 
     // getters, setters, etc.
     public ChatroomUserShip(){}
+    public ChatroomUserShip(ChatRoom chatroom,User user){
+        this.chatroom = chatroom;
+        this.user = user;
+    }
 
     public Long getId() {
         return id;

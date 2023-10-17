@@ -1,4 +1,4 @@
-package com.rando.springboot.randoJavaBackend.rest;
+package com.rando.springboot.randoJavaBackend.controller;
 
 import com.rando.springboot.randoJavaBackend.entity.ApiResponse;
 import com.rando.springboot.randoJavaBackend.entity.User;

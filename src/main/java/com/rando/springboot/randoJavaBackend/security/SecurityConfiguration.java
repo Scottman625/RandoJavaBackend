@@ -13,7 +13,7 @@ public class SecurityConfiguration {
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.ignoring().requestMatchers("/api/user/login/","/api/user/me/","/api/user/register/");
+        return (web) -> web.ignoring().requestMatchers("/api/user/login/","/api/user/me/","/api/chatroom/**","/ws/chatRoomMessages/**");
     }
 
     @Bean

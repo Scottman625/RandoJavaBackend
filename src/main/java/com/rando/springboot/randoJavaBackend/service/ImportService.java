@@ -39,24 +39,24 @@ public class ImportService {
         }
     }
 
-    public void importChatRoom() {
-        List<UserMatch> matches = matchRepository.findAll();
-
-        for (UserMatch match : matches) {
-            ChatRoom chatroom = new ChatRoom();
-            chatRoomRepository.save(chatroom);
-
-            ChatroomUserShip chatroomUserShip1 = new ChatroomUserShip();
-            chatroomUserShip1.setChatroom(chatroom);
-            chatroomUserShip1.setUser(match.getUser1());
-            chatroomUserShipRepository.save(chatroomUserShip1);
-
-            ChatroomUserShip chatroomUserShip2 = new ChatroomUserShip();
-            chatroomUserShip2.setChatroom(chatroom);
-            chatroomUserShip2.setUser(match.getUser2());
-            chatroomUserShipRepository.save(chatroomUserShip2);
-        }
-    }
+//    public void importChatRoom() {
+//        List<UserMatch> matches = matchRepository.findAll();
+//
+//        for (UserMatch match : matches) {
+//            ChatRoom chatroom = new ChatRoom();
+//            chatRoomRepository.save(chatroom);
+//
+//            ChatroomUserShip chatroomUserShip1 = new ChatroomUserShip();
+//            chatroomUserShip1.setChatroom(chatroom);
+//            chatroomUserShip1.setUser(match.getUser1());
+//            chatroomUserShipRepository.save(chatroomUserShip1);
+//
+//            ChatroomUserShip chatroomUserShip2 = new ChatroomUserShip();
+//            chatroomUserShip2.setChatroom(chatroom);
+//            chatroomUserShip2.setUser(match.getUser2());
+//            chatroomUserShipRepository.save(chatroomUserShip2);
+//        }
+//    }
 
     public void importCareer() {
         List<User> users = userRepository.findAll();

@@ -2,7 +2,9 @@ package com.rando.springboot.randoJavaBackend.entity;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
 
 
 @Entity
@@ -15,7 +17,7 @@ public class ChatRoom {
 
     @Column(name = "update_at")
     @Temporal(TemporalType.TIMESTAMP)
-    private Date updateAt;
+    private LocalDateTime updateAt;
 
     // Assume there is another Entity called ChatroomMessage which has a method to get the last update timestamp.
     public Date lastUpdateAt() {
@@ -34,12 +36,13 @@ public class ChatRoom {
         this.id = id;
     }
 
-    public Date getUpdateAt() {
+    public LocalDateTime getUpdateAt() {
         return updateAt;
     }
 
-    public void setUpdateAt(Date updateAt) {
+    public void setUpdateAt(LocalDateTime updateAt) {
         this.updateAt = updateAt;
     }
+
 }
 
