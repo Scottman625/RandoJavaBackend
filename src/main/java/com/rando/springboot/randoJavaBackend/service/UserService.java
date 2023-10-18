@@ -1,15 +1,19 @@
 package com.rando.springboot.randoJavaBackend.service;
 
+import com.rando.springboot.randoJavaBackend.dao.ChatroomMessageRepository;
+import com.rando.springboot.randoJavaBackend.dao.MatchRepository;
 import com.rando.springboot.randoJavaBackend.dao.UserLikeRepository;
 import com.rando.springboot.randoJavaBackend.dao.UserRepository;
+import com.rando.springboot.randoJavaBackend.dto.ChatRoomDTO;
+import com.rando.springboot.randoJavaBackend.dto.UserDTO;
 import com.rando.springboot.randoJavaBackend.entity.User;
+import com.rando.springboot.randoJavaBackend.entity.UserMatch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.Calendar;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -24,8 +28,26 @@ public class UserService {
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
 
+    @Autowired
+    private MatchRepository matchRepository;
+
+    @Autowired
+    private ChatroomMessageRepository messageRepository;
+
     public int getLikesCount(User user) {
         return userLikeRepository.countByLikedUser(user);
+    }
+
+    public List<UserDTO> getMatchNotChattedUser(User user){
+        List<UserMatch> matches = matchRepository.findAllByUser(user);
+        List<UserMatch> matchesWithoutMessages = matches.stream()
+                .filter(match -> messageRepository.countByMatch(match) == 0)
+                .collect(Collectors.toList());
+
+        List<User> users = userRepository.findUsersByMatchesWithoutMessagesAndExcludeCurrentUser(matchesWithoutMessages, user.getId());
+        List<UserDTO> userDTOS = convertToUserDTOs(users);
+
+        return userDTOS;
     }
 
     public Integer getAge(User user) {
@@ -138,6 +160,18 @@ public class UserService {
 
     public User findByUsername(String username) {
         return userRepository.findByUsername(username);
+    }
+
+    public List<UserDTO> convertToUserDTOs(List<User> users){
+        List<UserDTO> UserDTOs = new ArrayList<>();
+
+        for (User user: users){
+            UserDTO dto = new UserDTO(user);
+            dto.setName(user.getUsername());
+            dto.setImage(user.getImage());
+            UserDTOs.add(dto);
+        }
+        return UserDTOs;
     }
 
 

@@ -3,20 +3,21 @@ package com.rando.springboot.randoJavaBackend.dto;
 import com.rando.springboot.randoJavaBackend.entity.User;
 
 public class UserDTO {
-    private Integer id;
+    private Long id;
     private Integer age;
     private String other_side_image_url;
-    private String imageUrl;
+    private String image;
+    private String name;
 
     public UserDTO(User user){
         this.id = user.getId();
     }
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -36,11 +37,19 @@ public class UserDTO {
         this.other_side_image_url = other_side_image_url;
     }
 
-    public String getImageUrl() {
-        return imageUrl;
+    public String getImage() {
+        return image;
     }
 
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

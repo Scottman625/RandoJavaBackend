@@ -59,7 +59,7 @@ public class WebSocketService {
         Optional<ChatRoom> optionalChatRoom = chatRoomRepository.findById(id);
 
             List<User> users = chatRoomRepository.findAllUsersByChatRoom(optionalChatRoom.get());
-            List<Integer> integerList = users.stream()
+            List<Long> integerList = users.stream()
                     .map(User::getId)
                     .collect(Collectors.toList());
             List<String> participantUserIds = integerList.stream()

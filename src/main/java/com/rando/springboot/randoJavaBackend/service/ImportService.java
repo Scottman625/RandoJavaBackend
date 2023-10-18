@@ -62,7 +62,7 @@ public class ImportService {
         List<User> users = userRepository.findAll();
 
         for (User user : users) {
-            switch (user.getId() % 3) {
+            switch ((int)user.getId() % 3) {
                 case 1:
                     user.setCareer("工程師");
                     break;

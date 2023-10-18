@@ -1,9 +1,7 @@
 package com.rando.springboot.randoJavaBackend.dto;
 
-import com.rando.springboot.randoJavaBackend.dao.ChatRoomRepository;
 import com.rando.springboot.randoJavaBackend.entity.ChatRoom;
 import com.rando.springboot.randoJavaBackend.entity.User;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,7 +18,7 @@ public class ChatRoomDTO {
     private User otherSideUser;  // Assuming you have a UserDTO class
     private User currentUser;
     private Integer unreadNums;
-    private Integer currentUserId;
+    private Long currentUserId;
 
     private List<String> participantUserIds;
 
@@ -122,11 +120,11 @@ public class ChatRoomDTO {
         this.unreadNums = unreadNums;
     }
 
-    public Integer getCurrentUserId() {
+    public Long getCurrentUserId() {
         return currentUserId;
     }
 
-    public void setCurrentUserId(Integer currentUserId) {
+    public void setCurrentUserId(Long currentUserId) {
         this.currentUserId = currentUserId;
     }
 
