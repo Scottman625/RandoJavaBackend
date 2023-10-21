@@ -13,7 +13,8 @@ import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws/chatRoomMessages").withSockJS();
+        registry.addEndpoint("/ws/chatRoomMessages/{userId}/")
+                .setAllowedOrigins("*"); // 如果需要跨域支持，加上这一行
     }
 
     @Override

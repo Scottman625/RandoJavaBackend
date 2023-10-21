@@ -1,15 +1,31 @@
 package com.rando.springboot.randoJavaBackend.service;
 
-import com.amazonaws.AmazonServiceException;
-import com.amazonaws.HttpMethod;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
+import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
+import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
+import com.amazonaws.services.securitytoken.model.AssumeRoleResult;
+import com.rando.springboot.randoJavaBackend.controller.UserController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.AwsSessionCredentials;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.sts.StsClient;
+import software.amazon.awssdk.services.sts.model.AssumeRoleRequest;
+import software.amazon.awssdk.services.sts.model.AssumeRoleResponse;
 
-import java.net.URL;
-import java.util.Date;
+import java.util.concurrent.TimeUnit;
+
 
 @Service
 public class S3Service {
@@ -20,26 +36,87 @@ public class S3Service {
     @Autowired
     private AmazonS3 amazonS3;
 
-    public String generatePresignedUrl(String fileName) {
-        fileName = fileName.replace("https://rando-app-bucket.s3.amazonaws.com/", "");
-        fileName = fileName.split("\\?")[0];
 
-        try {
-            Date expiration = new Date();
-            long expTimeMillis = expiration.getTime();
-            expTimeMillis += 1000 * 60 * 60; // Add 1 hour
-            expiration.setTime(expTimeMillis);
+    @Value("${aws.accessKeyId}")
+    private String accessKey;
 
-            GeneratePresignedUrlRequest generatePresignedUrlRequest =
-                    new GeneratePresignedUrlRequest(bucketName, fileName)
-                            .withMethod(HttpMethod.GET)
-                            .withExpiration(expiration);
-            URL url = amazonS3.generatePresignedUrl(generatePresignedUrlRequest);
+    @Value("${aws.secretKey}")
+    private String secretKey;
 
-            return url.toString();
-        } catch (AmazonServiceException e) {
-            throw new RuntimeException("Error generating the presigned URL", e);
+    private static final Logger log = LoggerFactory.getLogger(UserController.class);
+
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
+
+    private final long URL_EXPIRATION_TIME = 3600; // 1 hour
+
+    public String getPresignedUrl(String fileName) {
+
+        try{
+            fileName = fileName.replace("https://rando-app-bucket.s3.amazonaws.com/", "");
+            String objectKey  = fileName.split("\\?")[0];
+            // Check Redis cache first
+            String presignedUrl = redisTemplate.opsForValue().get(objectKey);
+
+            if (presignedUrl == null) {
+                // Generate new presigned URL if not in cache
+                presignedUrl = generatePresignedUrl(objectKey);
+
+                // Cache the generated URL in Redis
+                redisTemplate.opsForValue().set(objectKey, presignedUrl, URL_EXPIRATION_TIME, TimeUnit.SECONDS);
+            }
+
+            return presignedUrl;
+        }catch (Exception e){
+            log.info(e.getMessage());
         }
+
+        return "";
+    }
+
+
+
+    public String generatePresignedUrl(String objectKey) {
+
+//        AwsBasicCredentials credentials = AwsBasicCredentials.create(accessKey, secretKey);
+        DefaultCredentialsProvider credentialsProvider = DefaultCredentialsProvider.create();
+
+
+//        S3Client s3 = S3Client.builder()
+//                .region(Region.AP_NORTHEAST_1)
+//                .credentialsProvider(credentialsProvider)
+//                .build();
+
+        StsClient sts = StsClient.builder()
+                .region(Region.AP_NORTHEAST_1)
+                .credentialsProvider(credentialsProvider)
+                .build();
+
+
+        String roleARN = "arn:aws:iam::854688567695:role/S3Access";
+        String roleSessionName = "testSession";  // 你可以選擇一個有意義的名稱
+
+        AssumeRoleRequest roleRequest = AssumeRoleRequest.builder()
+                .roleArn(roleARN)
+                .roleSessionName(roleSessionName)
+                .build();
+
+        AssumeRoleResponse roleResponse = sts.assumeRole(roleRequest);
+
+        String tempAccessKeyId = roleResponse.credentials().accessKeyId();
+        String tempSecretAccessKey = roleResponse.credentials().secretAccessKey();
+        String tempSessionToken = roleResponse.credentials().sessionToken();
+
+        S3Presigner presigner = S3Presigner.builder()
+                .region(Region.AP_NORTHEAST_1)  // 請根據您的實際情況替換 region
+                .credentialsProvider(StaticCredentialsProvider.create(AwsSessionCredentials.create(
+                        tempAccessKeyId, tempSecretAccessKey, tempSessionToken)))
+                .build();
+
+        String url = GeneratePresignedUrlAndUploadObject.generatePresignedUrl(presigner,bucketName,objectKey);
+        log.info(url);
+        return url;
+
     }
 }
 

@@ -16,6 +16,8 @@ public interface MatchRepository extends JpaRepository<UserMatch, Long> {
     // Check if a Match relationship exists between two users
     int countByUser1AndUser2(User user1, User user2);
 
+    int countByUser2AndUser1(User user1, User user2);
+
     List<UserMatch> findAll();
 
     @Query("SELECT m FROM UserMatch m WHERE (m.user1 = :user AND m.user2 = :otherSideUser) OR (m.user1 = :otherSideUser AND m.user2 = :user)")
@@ -23,5 +25,7 @@ public interface MatchRepository extends JpaRepository<UserMatch, Long> {
 
     @Query("SELECT m FROM UserMatch m WHERE m.user1 = :user OR m.user2 = :user")
     List<UserMatch> findAllByUser(User user);
+
+
 }
 

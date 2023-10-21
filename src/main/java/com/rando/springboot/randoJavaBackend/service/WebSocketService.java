@@ -23,9 +23,6 @@ public class WebSocketService {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Autowired
-    private ChatRoomRepository chatRoomRepository;
-
     // Store active sessions by user id or some identifier for targeted messaging
     private final Map<String, WebSocketSession> sessions = new ConcurrentHashMap<>();
 
@@ -45,7 +42,7 @@ public class WebSocketService {
         sessions.remove(userId);
     }
 
-    public void sendChatRoomUpdate(ChatRoomDTO chatRoomDTO) {
+    public void sendChatRoomUpdate(String userId,ChatRoomDTO chatRoomDTO) {
         // Convert the DTO to JSON or the message format you're using
         String messagePayload = "";
         try {
@@ -54,23 +51,7 @@ public class WebSocketService {
             // Handle the exception
             e.printStackTrace();
         }
-        long id = chatRoomDTO.getChatroomId();
-        // Assume chatRoomDTO has participant userIds as a List<String>
-        Optional<ChatRoom> optionalChatRoom = chatRoomRepository.findById(id);
 
-            List<User> users = chatRoomRepository.findAllUsersByChatRoom(optionalChatRoom.get());
-            List<Long> integerList = users.stream()
-                    .map(User::getId)
-                    .collect(Collectors.toList());
-            List<String> participantUserIds = integerList.stream()
-                    .map(String::valueOf)
-                    .collect(Collectors.toList());
-
-            // your other code here...
-
-//        List<String> participantUserIds = chatRoomRepository.findAllUsersByChatRoom(chatRoomRepository.findById(id));
-
-        for (String userId : participantUserIds) {
             WebSocketSession session = sessions.get(userId);
             if (session != null && session.isOpen()) {
                 try {
@@ -80,7 +61,7 @@ public class WebSocketService {
                     // Handle exception - maybe close the session or inform the user
                 }
             }
-        }
+
     }
 
 }

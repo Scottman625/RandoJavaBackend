@@ -19,7 +19,7 @@ public class S3Controller {
     @GetMapping("/generate-presigned-url")
     public ResponseEntity<String> generatePresignedUrl(@RequestParam String fileName) {
         try {
-            String presignedUrl = s3Service.generatePresignedUrl(fileName);
+            String presignedUrl = s3Service.getPresignedUrl(fileName);
             return ResponseEntity.ok(presignedUrl);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error generating the presigned URL");

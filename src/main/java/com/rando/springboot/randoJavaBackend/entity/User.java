@@ -223,4 +223,6 @@ public class User {
     public void setBackgroundImage(Byte[] backgroundImage) {
         this.backgroundImage = backgroundImage;
     }
+
+
 }

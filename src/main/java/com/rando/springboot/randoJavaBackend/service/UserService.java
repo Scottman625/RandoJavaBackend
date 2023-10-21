@@ -8,10 +8,13 @@ import com.rando.springboot.randoJavaBackend.dto.ChatRoomDTO;
 import com.rando.springboot.randoJavaBackend.dto.UserDTO;
 import com.rando.springboot.randoJavaBackend.entity.User;
 import com.rando.springboot.randoJavaBackend.entity.UserMatch;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -21,6 +24,9 @@ public class UserService {
 
     @Autowired
     private  UserRepository userRepository;
+
+    @Autowired
+    private S3Service s3Service; // The S3Service we defined previously
 
     @Autowired
     private UserLikeRepository userLikeRepository;
@@ -167,11 +173,36 @@ public class UserService {
 
         for (User user: users){
             UserDTO dto = new UserDTO(user);
+
+            BeanUtils.copyProperties(user, dto);
             dto.setName(user.getUsername());
-            dto.setImage(user.getImage());
+            dto.setImage(s3Service.getPresignedUrl(user.getImage()));
+            dto.setAge(getAge(user));
+            dto.setCareer(user.getCareer());
+            dto.setPhone(user.getPhone());
+            dto.setGender(user.getGender());
+            dto.setAboutMe(user.getAboutMe());
             UserDTOs.add(dto);
         }
         return UserDTOs;
+    }
+
+
+    private static final Random random = new Random();
+
+    public static Date generateRandomDate(int startYear, int endYear) {
+        int dayOfYear = random.nextInt(365) + 1;
+        int year = startYear + random.nextInt(endYear - startYear + 1);
+        LocalDate localDate = LocalDate.ofYearDay(year, dayOfYear);
+        return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+    }
+    public void setRandomBirthDatesForAllUsers() {
+        List<User> users = userRepository.findAll();
+        for (User user : users) {
+            Date randomDate = generateRandomDate(1950, 2020);  // 假設生日範圍是1950年到2020年
+            user.setBirthDate(randomDate);
+            userRepository.save(user);
+        }
     }
 
 

@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
@@ -14,8 +15,8 @@ public class SecurityConfiguration {
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring().requestMatchers("/api/user/login/",
-                "/api/user/me/","/api/chatroom/**","/ws/chatRoomMessages/**",
-                "/api/matched_not_chatted");
+                "/api/user/me/","/api/chatroom/**","/ws/chatRoomMessages/**","/ws/**",
+                "/api/matched_not_chatted","/api/user_picked");
     }
 
     @Bean

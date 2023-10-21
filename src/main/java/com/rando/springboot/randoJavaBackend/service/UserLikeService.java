@@ -25,14 +25,21 @@ public class UserLikeService {
     private UserRepository userRepository;
 
     public void importUserLike(){
-        for (int i = 200; i <= 400; i += 4){
-            for (int j = 3; j <= 200; j += 3){
-                UserLike userLike = new UserLike();
-                userLike.setUser(userRepository.findById(i));
-                userLike.setLikedUser(userRepository.findById(j));
-                userLike.setLikeStatus(true);
-                saveUserLike(userLike);
-            }
+//        for (int i = 200; i <= 400; i += 4){
+//            for (int j = 3; j <= 200; j += 3){
+//                UserLike userLike = new UserLike();
+//                userLike.setUser(userRepository.findById(i));
+//                userLike.setLikedUser(userRepository.findById(j));
+//                userLike.setLikeStatus(true);
+//                saveUserLike(userLike);
+//            }
+//        }
+        for (int i = 209; i <=400; i++){
+            UserLike userLike = new UserLike();
+            userLike.setUser(userRepository.findById(i));
+            userLike.setLikedUser(userRepository.findById(1));
+            userLike.setLikeStatus(true);
+            saveUserLike(userLike);
         }
     }
 

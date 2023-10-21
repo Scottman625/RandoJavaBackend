@@ -3,6 +3,7 @@ package com.rando.springboot.randoJavaBackend;
 import com.rando.springboot.randoJavaBackend.service.ImportService;
 import com.rando.springboot.randoJavaBackend.service.UserLikeService;
 import com.rando.springboot.randoJavaBackend.service.UserService;
+import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -24,6 +25,12 @@ public class RandoJavaBackendApplication {
 	private ImportService importService;
 
 	public static void main(String[] args) {
+		Dotenv dotenv = Dotenv.load();
+		String accessKey = dotenv.get("AWS_ACCESS_KEY_ID");
+		String secretKey = dotenv.get("AWS_SECRET_ACCESS_KEY");
+
+		System.out.println("Access Key: " + accessKey);
+		System.out.println("Secret Key: " + secretKey);
 
 		SpringApplication.run(RandoJavaBackendApplication.class, args);
 	}
@@ -36,6 +43,7 @@ public class RandoJavaBackendApplication {
 //			importService.importCareer();
 //			importService.importUserMatch();
 //			importService.importChatRoom();
+//			userService.setRandomBirthDatesForAllUsers();
 
 		};
 	}

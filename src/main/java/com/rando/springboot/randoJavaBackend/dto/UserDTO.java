@@ -4,10 +4,20 @@ import com.rando.springboot.randoJavaBackend.entity.User;
 
 public class UserDTO {
     private Long id;
+
+    private String phone;
     private Integer age;
     private String other_side_image_url;
     private String image;
     private String name;
+
+    private String career;
+
+    private String aboutMe;
+
+    private User.Gender gender;
+
+
 
     public UserDTO(User user){
         this.id = user.getId();
@@ -51,5 +61,37 @@ public class UserDTO {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getCareer() {
+        return career;
+    }
+
+    public void setCareer(String career) {
+        this.career = career;
+    }
+
+    public String getAboutMe() {
+        return aboutMe;
+    }
+
+    public void setAboutMe(String aboutMe) {
+        this.aboutMe = aboutMe;
+    }
+
+    public User.Gender getGender() {
+        return gender;
+    }
+
+    public void setGender(User.Gender gender) {
+        this.gender = gender;
     }
 }

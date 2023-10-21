@@ -58,14 +58,14 @@ public class ChatRoomService {
             int unreadCount = chatroomMessageRepository.countByChatroomAndSenderAndIsReadByOtherSide(chatRoom, otherSideUser, false);
             dto.setUnreadNums(unreadCount);
 
-            dto.setOtherSideImageUrl(s3Service.generatePresignedUrl(otherSideUser.getImage()));
+            dto.setOtherSideImageUrl(s3Service.getPresignedUrl(otherSideUser.getImage()));
             dto.setOtherSideName(otherSideUser.getUsername());
             dto.setOtherSideAge(userService.getAge(otherSideUser));
             dto.setOtherSideCareer(otherSideUser.getCareer());
 
             dto.setCurrentUser(user);
             dto.setCurrentUserId(user.getId());
-            dto.setCurrentUserImageUrl(s3Service.generatePresignedUrl(user.getImage()));
+            dto.setCurrentUserImageUrl(s3Service.getPresignedUrl(user.getImage()));
 
             Optional<ChatroomMessage> optionalLastMessage = chatroomMessageRepository.findFirstByChatroomOrderByCreateAt(chatRoom);
             if (optionalLastMessage.isPresent()) {
@@ -141,7 +141,7 @@ public class ChatRoomService {
             chatroom = chatRoomRepository.findFirstByIdIn(user1Chatrooms);
         }
         // Assuming you have a method to generate presigned URLs similar to the Django version.
-        String presignedUrl = s3Service.generatePresignedUrl(otherSideUser.getImage());
+        String presignedUrl = s3Service.getPresignedUrl(otherSideUser.getImage());
 
 
 // 3. Convert to DTO and return
@@ -180,13 +180,6 @@ public class ChatRoomService {
 
         List<ChatRoom> userChatRooms = getChatroomList(user);
 
-//                if (!"no".equals(isChat)) {
-//            userChatRooms = getChatroomList(user);
-//        }
-
-        // TODO: Convert these ChatRooms to DTOs with additional data and return them.
-        String presignedUrl = s3Service.generatePresignedUrl(otherSideUser.getImage());
-
 
 // 3. Convert to DTO and return
         List<ChatRoomDTO> chatRoomDTOs = convertToDTO(userChatRooms,user);
@@ -199,8 +192,15 @@ public class ChatRoomService {
     }
 
     private void notifyUsersViaWebSocket(ChatRoom chatroom) {
-        ChatRoomDTO chatRoomDTO = convertToChatRoomDTO(chatroom, null); // Assuming conversion can handle null for the otherSideUser
-        webSocketService.sendChatRoomUpdate(chatRoomDTO);
+        ChatRoomDTO chatRoomDTO = convertToChatRoomDTO(chatroom, null);
+
+        // 假设你的ChatRoom实体或DTO有一个方法可以获取所有的participant userIds
+
+        List<String> participantUserIds = getParticipantUserIds(chatRoomDTO);
+
+        for (String userId : participantUserIds) {
+            webSocketService.sendChatRoomUpdate(userId, chatRoomDTO);
+        }
     }
 
     private ChatRoomDTO convertToChatRoomDTO(ChatRoom chatroom, User otherSideUser) {
@@ -227,7 +227,7 @@ public class ChatRoomService {
                 dto.setUnreadNums(unreadCount);
             }
             // Here, populate the DTO's attributes based on the ChatRoom entity.
-            dto.setOtherSideImageUrl(s3Service.generatePresignedUrl(otherSideChatRoomUser.getImage()));
+            dto.setOtherSideImageUrl(s3Service.getPresignedUrl(otherSideChatRoomUser.getImage()));
             dto.setOtherSideName(otherSideChatRoomUser.getUsername());
             dto.setOtherSideAge(userService.getAge(otherSideChatRoomUser));
             dto.setOtherSideCareer(otherSideChatRoomUser.getCareer());
@@ -268,32 +268,22 @@ public class ChatRoomService {
         return null;  // or you might want to handle this differently
     }
 
-//    public List<Map<String, Object>> getUnreadChatroomMessageCount(User user, boolean isSender, User otherSideUser) {
-//        List<Long> chatroomIds;
-//        List<ChatRoom> chatrooms;
-//
-//        if (isSender) {
-//            chatroomIds = chatroomUserShipRepository.findChatroomIdsByUser(otherSideUser);
-//            chatrooms = chatRoomRepository.findBySenderIdAndUnread(user, chatroomIds);
-//        } else {
-//            chatroomIds = chatroomUserShipRepository.findChatroomIdsByUser(user);
-//            chatrooms = chatRoomRepository.findByReceiverIdAndUnread(user, chatroomIds);
-//        }
-//
-//        List<Map<String, Object>> chatroomMessageCountList = new ArrayList<>();
-//        for (ChatRoom chatroom : chatrooms) {
-//            Map<String, Object> chatroomMessageMap = new HashMap<>();
-//            chatroomMessageMap.put("chatroom", chatroom.getId());
-//            chatroomMessageMap.put("unread_nums", chatroom.getUnreadNums()); // Assuming you've added getUnreadNums method in ChatRoom entity.
-//            chatroomMessageCountList.add(chatroomMessageMap);
-//        }
-//
-//        return chatroomMessageCountList;
-//    }
-
     public List<ChatRoom> getChatroomList(User user) {
         List<Long> chatroomIds = chatroomUserShipRepository.findChatroomIdsByUser(user);
         return chatRoomRepository.findChatroomsWithMessages(chatroomIds);
+    }
+
+    public List<String> getParticipantUserIds(ChatRoomDTO chatRoomDTO) {
+        long id = chatRoomDTO.getChatroomId();
+        Optional<ChatRoom> optionalChatRoom = chatRoomRepository.findById(id);
+        List<User> users = chatRoomRepository.findAllUsersByChatRoom(optionalChatRoom.get());
+        List<Long> integerList = users.stream()
+                .map(User::getId)
+                .collect(Collectors.toList());
+        List<String> participantUserIds = integerList.stream()
+                .map(String::valueOf)
+                .collect(Collectors.toList());
+        return participantUserIds;
     }
 }
 

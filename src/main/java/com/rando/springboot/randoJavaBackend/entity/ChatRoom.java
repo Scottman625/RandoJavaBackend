@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @Entity
@@ -43,6 +45,7 @@ public class ChatRoom {
     public void setUpdateAt(LocalDateTime updateAt) {
         this.updateAt = updateAt;
     }
+
 
 }
 

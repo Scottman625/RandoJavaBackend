@@ -24,4 +24,10 @@ public interface UserRepository extends JpaRepository<User, Integer> {
             @Param("matchesWithoutMessages") List<UserMatch> matchesWithoutMessages,
             @Param("currentUserId") Long currentUserId
     );
+
+    @Query("SELECT u From User u WHERE u.id <> :currentUserId and u.gender <> :currentUserGender")
+    List<User> findByIdNotAndGenderNot(@Param("currentUserId") Long currentUserId, @Param("currentUserGender") User.Gender currentUserGender);
+
+
+    List<User> findByIdNotAndGenderNotAndIdNotIn(long id, User.Gender gender, List<Long> pickedUsersIdList);
 }
