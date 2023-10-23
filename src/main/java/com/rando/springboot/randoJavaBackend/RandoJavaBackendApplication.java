@@ -1,6 +1,8 @@
 package com.rando.springboot.randoJavaBackend;
 
+import com.rando.springboot.randoJavaBackend.dao.UserRepository;
 import com.rando.springboot.randoJavaBackend.service.ImportService;
+import com.rando.springboot.randoJavaBackend.service.S3Service;
 import com.rando.springboot.randoJavaBackend.service.UserLikeService;
 import com.rando.springboot.randoJavaBackend.service.UserService;
 import io.github.cdimascio.dotenv.Dotenv;
@@ -19,10 +21,16 @@ public class RandoJavaBackendApplication {
 	private UserService userService;
 
 	@Autowired
+	private UserRepository userRepository;
+
+	@Autowired
 	private UserLikeService userLikeService;
 
 	@Autowired
 	private ImportService importService;
+
+	@Autowired
+	private S3Service s3Service;
 
 	public static void main(String[] args) {
 		Dotenv dotenv = Dotenv.load();
@@ -44,6 +52,7 @@ public class RandoJavaBackendApplication {
 //			importService.importUserMatch();
 //			importService.importChatRoom();
 //			userService.setRandomBirthDatesForAllUsers();
+//			s3Service.regeneratePresignedUrl(userRepository.findAll());
 
 		};
 	}

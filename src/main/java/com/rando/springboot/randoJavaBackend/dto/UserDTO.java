@@ -1,21 +1,22 @@
 package com.rando.springboot.randoJavaBackend.dto;
 
 import com.rando.springboot.randoJavaBackend.entity.User;
+import com.rando.springboot.randoJavaBackend.entity.UserImage;
+
+import java.util.List;
 
 public class UserDTO {
     private Long id;
-
     private String phone;
     private Integer age;
     private String other_side_image_url;
     private String image;
     private String name;
-
     private String career;
-
     private String aboutMe;
-
     private User.Gender gender;
+    private Integer likesCount;
+    private List<UserImageDTO> userImages;
 
 
 
@@ -93,5 +94,21 @@ public class UserDTO {
 
     public void setGender(User.Gender gender) {
         this.gender = gender;
+    }
+
+    public Integer getLikesCount() {
+        return likesCount;
+    }
+
+    public void setLikesCount(Integer likesCount) {
+        this.likesCount = likesCount;
+    }
+
+    public List<UserImageDTO> getUserImages() {
+        return userImages;
+    }
+
+    public void setUserImages(List<UserImageDTO> userImages) {
+        this.userImages = userImages;
     }
 }

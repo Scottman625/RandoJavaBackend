@@ -1,12 +1,11 @@
 package com.rando.springboot.randoJavaBackend.service;
 
-import com.rando.springboot.randoJavaBackend.dao.ChatroomMessageRepository;
-import com.rando.springboot.randoJavaBackend.dao.MatchRepository;
-import com.rando.springboot.randoJavaBackend.dao.UserLikeRepository;
-import com.rando.springboot.randoJavaBackend.dao.UserRepository;
+import com.rando.springboot.randoJavaBackend.dao.*;
 import com.rando.springboot.randoJavaBackend.dto.ChatRoomDTO;
 import com.rando.springboot.randoJavaBackend.dto.UserDTO;
+import com.rando.springboot.randoJavaBackend.dto.UserImageDTO;
 import com.rando.springboot.randoJavaBackend.entity.User;
+import com.rando.springboot.randoJavaBackend.entity.UserImage;
 import com.rando.springboot.randoJavaBackend.entity.UserMatch;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +25,12 @@ public class UserService {
     private  UserRepository userRepository;
 
     @Autowired
+    private UserImageRepository userImageRepository;
+
+    @Autowired
+    private UserImageService userImageService;
+
+    @Autowired
     private S3Service s3Service; // The S3Service we defined previously
 
     @Autowired
@@ -41,7 +46,7 @@ public class UserService {
     private ChatroomMessageRepository messageRepository;
 
     public int getLikesCount(User user) {
-        return userLikeRepository.countByLikedUser(user);
+        return userLikeRepository.countByLikedUserAndLikeStatusIsTrue(user);
     }
 
     public List<UserDTO> getMatchNotChattedUser(User user){
@@ -185,6 +190,29 @@ public class UserService {
             UserDTOs.add(dto);
         }
         return UserDTOs;
+    }
+
+    public UserDTO convertToUserDTO(User user){
+        List<UserImageDTO> userImageDTOS = new ArrayList<>();
+        UserDTO dto = new UserDTO(user);
+        dto.setName(user.getUsername());
+        dto.setImage(user.getImage());
+        dto.setAge(getAge(user));
+        dto.setCareer(user.getCareer());
+        dto.setPhone(user.getPhone());
+        dto.setGender(user.getGender());
+        dto.setAboutMe(user.getAboutMe());
+        dto.setLikesCount(getLikesCount(user));
+        List<UserImage> userImages = userImageRepository.findByUser(user);
+        for(UserImage userImage: userImages){
+            UserImageDTO userImageDTO = new UserImageDTO(userImage);
+            String newImageUrl = s3Service.getPresignedUrl(userImage.getImage());
+            userImageDTO.setImageUrl(userImage.getImage());
+            userImageDTOS.add(userImageDTO);
+        }
+        dto.setUserImages( userImageDTOS);
+
+        return dto;
     }
 
 

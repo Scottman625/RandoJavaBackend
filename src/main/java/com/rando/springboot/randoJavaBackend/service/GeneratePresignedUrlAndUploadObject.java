@@ -18,7 +18,7 @@ public class GeneratePresignedUrlAndUploadObject {
 
         // 建立預簽名請求
         GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(10))  // 簽名有效時間
+                .signatureDuration(Duration.ofMinutes(1440))  // 簽名有效時間
                 .getObjectRequest(getObjectRequest)
                 .build();
 

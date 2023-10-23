@@ -1,29 +1,24 @@
 package com.rando.springboot.randoJavaBackend.service;
 
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
-import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
-import com.amazonaws.services.securitytoken.model.AssumeRoleResult;
 import com.rando.springboot.randoJavaBackend.controller.UserController;
+import com.rando.springboot.randoJavaBackend.entity.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsSessionCredentials;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.sts.StsClient;
 import software.amazon.awssdk.services.sts.model.AssumeRoleRequest;
 import software.amazon.awssdk.services.sts.model.AssumeRoleResponse;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 
@@ -51,10 +46,10 @@ public class S3Service {
     private final long URL_EXPIRATION_TIME = 3600; // 1 hour
 
     public String getPresignedUrl(String fileName) {
+        fileName = fileName.replace("https://rando-app-bucket.s3.amazonaws.com/", "");
+        String objectKey  = fileName.split("\\?")[0];
 
         try{
-            fileName = fileName.replace("https://rando-app-bucket.s3.amazonaws.com/", "");
-            String objectKey  = fileName.split("\\?")[0];
             // Check Redis cache first
             String presignedUrl = redisTemplate.opsForValue().get(objectKey);
 
@@ -69,9 +64,9 @@ public class S3Service {
             return presignedUrl;
         }catch (Exception e){
             log.info(e.getMessage());
-        }
 
-        return "";
+        }
+        return fileName;
     }
 
 
@@ -117,6 +112,19 @@ public class S3Service {
         log.info(url);
         return url;
 
+    }
+
+    public void regeneratePresignedUrl(List<User> users){
+        for(User user: users){
+            String fileName = user.getImage();
+            fileName = fileName.replace("https://rando-app-bucket.s3.amazonaws.com/", "");
+            String objectKey  = fileName.split("\\?")[0];
+            String presignedUrl = generatePresignedUrl(objectKey);
+
+            // Cache the generated URL in Redis
+            redisTemplate.opsForValue().set(objectKey, presignedUrl, URL_EXPIRATION_TIME, TimeUnit.SECONDS);
+
+        }
     }
 }
 

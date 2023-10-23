@@ -143,7 +143,7 @@
 		<dependency>
 			<groupId>software.amazon.awssdk</groupId>
 			<artifactId>s3</artifactId>
-			<version>2.20.52</version> <!-- 使用最新的版本 -->
+			<version>2.20.109</version> <!-- 使用最新的版本 -->
 		</dependency>
 
 		<dependency>

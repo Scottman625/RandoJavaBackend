@@ -14,7 +14,7 @@ public interface UserLikeRepository extends JpaRepository<UserLike, Long> {
 
     // Check if a UserLike relationship exists given specific conditions
     boolean existsByUserAndLikedUserAndLikeStatus(User user, User likedUser, boolean isLike);
-    int countByLikedUser(User user);
+    int countByLikedUserAndLikeStatusIsTrue(User user);
     List<UserLike> findByUserAndLikeStatusIsNotNull(User user);
 
 

@@ -1,8 +1,10 @@
 package com.rando.springboot.randoJavaBackend.controller;
 
+import com.rando.springboot.randoJavaBackend.dto.UserDTO;
 import com.rando.springboot.randoJavaBackend.entity.ApiResponse;
 import com.rando.springboot.randoJavaBackend.entity.User;
 import com.rando.springboot.randoJavaBackend.security.JwtTokenProvider;
+import com.rando.springboot.randoJavaBackend.service.JwtService;
 import com.rando.springboot.randoJavaBackend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -26,6 +29,9 @@ public class UserController {
 
     @Autowired
     private JwtTokenProvider jwtTokenProvider;  // 這個是用來處理JWT的組件，您可能需要自己實現。
+
+    @Autowired
+    private JwtService jwtService;  // 這個是用來處理JWT的組件，您可能需要自己實現。
 
     @PostMapping("/register/")
     public ResponseEntity<ApiResponse<Map<String, String>>> register(@RequestParam String phone, @RequestParam String password) {
@@ -62,34 +68,30 @@ public class UserController {
     }
 
     @GetMapping("/me/")
-    public ResponseEntity<User> getMe(HttpServletRequest request) {
-        log.info("Entering getMe method");
+    public ResponseEntity<UserDTO> getMe(HttpServletRequest request) {
+        try {
+            User user = jwtService.tokenGetUser(request);
+            UserDTO userDTO = userService.convertToUserDTO(user);
 
-        // 從請求頭中取得token
-        String token = jwtTokenProvider.resolveToken(request);
-        log.info("Resolved token: " + token);
-
-        if (token == null || !jwtTokenProvider.validateToken(token)) {
-            log.warn("Token validation failed");
+            log.info("Found user: " + user.toString());
+            return new ResponseEntity<>(userDTO, HttpStatus.OK);
+        } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
 
-        // 從token中取得使用者ID或使用者名稱
-        String username = jwtTokenProvider.getUsername(token);
-        log.info("Resolved username: " + username);
 
-        // 使用ID或使用者名稱從數據庫中獲取使用者詳情
-        User user = userService.findByUsername(username);
-
-        if (user == null) {
-            log.warn("User not found for username: " + username);
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-
-        log.info("Found user: " + user.toString());
-        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
+    @GetMapping("/get_user/")
+    public ResponseEntity<UserDTO> getUser(HttpServletRequest request) {
+        try {
+            User user = jwtService.tokenGetUser(request);
+            UserDTO userDTO = userService.convertToUserDTO(user);
+            return ResponseEntity.ok(userDTO);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+    }
 }
 
 
