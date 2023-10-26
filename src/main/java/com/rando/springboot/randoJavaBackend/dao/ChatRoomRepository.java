@@ -31,7 +31,6 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     List<User> findAllUsersByChatRoom(@Param("chatRoom") ChatRoom chatRoom);
 
 
-//    List<ChatRoom> findBySenderIdAndUnread(User user, List<Long> chatroomIds);
-//
-//    List<ChatRoom> findByReceiverIdAndUnread(User user, List<Long> chatroomIds);
+    @Query("SELECT c FROM ChatRoom c WHERE (SELECT COUNT(m) FROM ChatroomMessage m WHERE m.chatroom = c) > 0 And c IN :otherSideChatRooms")
+    List<ChatRoom> findChatroomsWithMessagesIn(List<ChatRoom> otherSideChatRooms);
 }

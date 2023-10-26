@@ -2,17 +2,21 @@ package com.rando.springboot.randoJavaBackend.dto;
 
 import com.rando.springboot.randoJavaBackend.entity.ChatRoom;
 import com.rando.springboot.randoJavaBackend.entity.User;
+import com.rando.springboot.randoJavaBackend.service.S3Service;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 public class ChatRoomDTO {
-
+    private ChatRoom chatRoom;
     private String otherSideImageUrl;
     private String otherSideName;
     private String lastMessage;
     private Long chatroomId;  // Assuming chatroom's ID type is Long
     private LocalDateTime lastMessageTime;  // Use LocalDateTime for date-time without timezone
+
+    private LocalDateTime updateAt;
     private Integer otherSideAge;
     private String otherSideCareer;
     private User otherSideUser;  // Assuming you have a UserDTO class
@@ -22,13 +26,13 @@ public class ChatRoomDTO {
 
     private List<String> participantUserIds;
 
-    private User other_side_chatRoom_user;
+    private User otherSideChatRoomUser;
 
     public ChatRoomDTO(ChatRoom chatRoom) {
         // Here, initialize DTO properties from the ChatRoom entity
         // This is a basic example; in reality, you'd need more logic especially if
         // you're fetching related entities or have complex calculations.
-        this.chatroomId = chatRoom.getId();
+        this.chatRoom = chatRoom;
         // this.otherSideImageUrl = ...;  // Example: logic to set the image URL
         // ... Initialize other attributes here ...
 
@@ -142,12 +146,28 @@ public class ChatRoomDTO {
         this.participantUserIds = participantUserIds;
     }
 
-    public User getOther_side_chatRoom_user() {
-        return other_side_chatRoom_user;
+    public User getOtherSideChatRoomUser() {
+        return otherSideChatRoomUser;
     }
 
-    public void setOther_side_chatRoom_user(User other_side_chatRoom_user) {
-        this.other_side_chatRoom_user = other_side_chatRoom_user;
+    public void setOtherSideChatRoomUser(User otherSideChatRoomUser) {
+        this.otherSideChatRoomUser = otherSideChatRoomUser;
+    }
+
+    public LocalDateTime getUpdateAt() {
+        return updateAt;
+    }
+
+    public void setUpdateAt(LocalDateTime updateAt) {
+        this.updateAt = updateAt;
+    }
+
+    public ChatRoom getChatRoom() {
+        return chatRoom;
+    }
+
+    public void setChatRoom(ChatRoom chatRoom) {
+        this.chatRoom = chatRoom;
     }
 }
 

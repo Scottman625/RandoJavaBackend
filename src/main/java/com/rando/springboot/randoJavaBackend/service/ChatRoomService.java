@@ -1,8 +1,11 @@
 package com.rando.springboot.randoJavaBackend.service;
 
+import com.rando.springboot.randoJavaBackend.controller.UserController;
 import com.rando.springboot.randoJavaBackend.dao.*;
 import com.rando.springboot.randoJavaBackend.dto.ChatRoomDTO;
 import com.rando.springboot.randoJavaBackend.entity.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +16,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class ChatRoomService {
+    private static final Logger log = LoggerFactory.getLogger(UserController.class);
 
     @Autowired
     private UserService userService;
@@ -41,36 +45,28 @@ public class ChatRoomService {
 
     public List<ChatRoomDTO> getChatRoomsForUser(User user, boolean isChat) {
         List<Long> chatroomIds = chatroomUserShipRepository.findChatRoomIdsByUser(user);
-
         List<ChatRoom> chatRooms = chatRoomRepository.findByIdInOrderByUpdateAtDesc(chatroomIds);
-
         if (!isChat) {
-            return convertToDTO(chatRooms,user); // Simple conversion if isChat is 'no'
+            return convertToDTO(chatRooms, user); // Simple conversion if isChat is 'no'
         }
-
         List<ChatRoomDTO> chatRoomDTOs = new ArrayList<>();
 
         for (ChatRoom chatRoom : chatRooms) {
             ChatRoomDTO dto = new ChatRoomDTO(chatRoom);
-
             User otherSideUser = chatroomUserShipRepository.findOtherSideUser(chatRoom, user);
             dto.setOtherSideUser(otherSideUser);
-
             int unreadCount = chatroomMessageRepository.countByChatroomAndSenderAndIsReadByOtherSide(chatRoom, otherSideUser, false);
             dto.setUnreadNums(unreadCount);
-
             dto.setOtherSideImageUrl(s3Service.getPresignedUrl(otherSideUser.getImage()));
             dto.setOtherSideName(otherSideUser.getUsername());
             dto.setOtherSideAge(userService.getAge(otherSideUser));
             dto.setOtherSideCareer(otherSideUser.getCareer());
-
             dto.setCurrentUser(user);
             dto.setCurrentUserId(user.getId());
             dto.setCurrentUserImageUrl(s3Service.getPresignedUrl(user.getImage()));
-
-            Optional<ChatroomMessage> optionalLastMessage = chatroomMessageRepository.findFirstByChatroomOrderByCreateAt(chatRoom);
-            if (optionalLastMessage.isPresent()) {
-                ChatroomMessage lastMessage = optionalLastMessage.get();
+            Optional<ChatroomMessage> lastMessageOptional = chatroomMessageRepository.findTopByChatroomOrderByCreateAtDesc(chatRoom);
+            if (lastMessageOptional.isPresent()) {
+                ChatroomMessage lastMessage = lastMessageOptional.get();
                 if (lastMessage.getContent() != null && !lastMessage.getContent().isEmpty()) {
                     dto.setLastMessage(lastMessage.getContent().substring(0, Math.min(15, lastMessage.getContent().length())));
                 } else if (lastMessage.getImage() != null && !lastMessage.getImage().isEmpty()) {
@@ -78,87 +74,125 @@ public class ChatRoomService {
                 } else {
                     dto.setLastMessage("");
                 }
-
-                int chatRoomsNotReadMessages = chatroomMessageRepository.countByChatroomAndIsReadByOtherSideAndSenderNot(chatRoom, false, user);
-                dto.setUnreadNums(chatRoomsNotReadMessages);
-                dto.setLastMessageTime(getLastUpdateAt(chatRoom));
+            } else {
+                // 如果没有找到最后一条消息，将LastMessage设置为空字符串
+                dto.setLastMessage("");
             }
+
+            int chatRoomsNotReadMessages = chatroomMessageRepository.countByChatroomAndIsReadByOtherSideAndSenderNot(chatRoom, false, user);
+            dto.setUnreadNums(chatRoomsNotReadMessages);
+            dto.setLastMessageTime(getLastUpdateAt(chatRoom));
+
             chatRoomDTOs.add(dto);
+
         }
 
         return chatRoomDTOs;
     }
 
-    public ChatRoomDTO retrieveChatRoom(User user, Long chatroomId) {
+    public List<ChatRoomDTO> retrieveChatRoom(User user, Long chatroomId) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatroomId).orElse(null);
 
         if (chatRoom == null) {
             throw new ResourceNotFoundException("Chat room not found"); // Or handle as per your error management
         }
+        List<ChatRoomDTO> chatRoomDTOs = new ArrayList<>();
 
         ChatRoomDTO dto = new ChatRoomDTO(chatRoom);
+
         User otherSideUser = chatroomUserShipRepository.findOtherSideUser(chatRoom, user);
-
         dto.setOtherSideUser(otherSideUser);
-        dto.setCurrentUser(user);
+
+        int unreadCount = chatroomMessageRepository.countByChatroomAndSenderAndIsReadByOtherSide(chatRoom, otherSideUser, false);
+        dto.setUnreadNums(unreadCount);
+
+        dto.setOtherSideImageUrl(s3Service.getPresignedUrl(otherSideUser.getImage()));
+        dto.setOtherSideName(otherSideUser.getUsername());
         dto.setOtherSideAge(userService.getAge(otherSideUser));
+        dto.setOtherSideCareer(otherSideUser.getCareer());
+
+        dto.setCurrentUser(user);
         dto.setCurrentUserId(user.getId());
+        dto.setCurrentUserImageUrl(s3Service.getPresignedUrl(user.getImage()));
 
-        Optional<ChatroomMessage> optionalLastMessage = chatroomMessageRepository.findFirstByChatroomOrderByCreateAt(chatRoom);
-        if (optionalLastMessage.isPresent()) {
-            dto.setLastMessageTime(getLastUpdateAt(chatRoom));
+        Optional<ChatroomMessage> lastMessageOptional = chatroomMessageRepository.findTopByChatroomOrderByCreateAtDesc(chatRoom);
+        if (lastMessageOptional.isPresent()) {
+            ChatroomMessage lastMessage = lastMessageOptional.get();
+
+            if (lastMessage.getContent() != null && !lastMessage.getContent().isEmpty()) {
+
+                dto.setLastMessage(lastMessage.getContent().substring(0, Math.min(15, lastMessage.getContent().length())));
+            } else if (lastMessage.getImage() != null && !lastMessage.getImage().isEmpty()) {
+                dto.setLastMessage("已傳送圖片");
+            } else {
+                dto.setLastMessage("");
+            }
+        } else {
+            // 如果没有找到最后一条消息，将LastMessage设置为空字符串
+            dto.setLastMessage("");
         }
+        int chatRoomsNotReadMessages = chatroomMessageRepository.countByChatroomAndIsReadByOtherSideAndSenderNot(chatRoom, false, user);
+        dto.setUnreadNums(chatRoomsNotReadMessages);
+        dto.setLastMessageTime(getLastUpdateAt(chatRoom));
 
-        return dto;
+        chatRoomDTOs.add(dto);
+//        notifyUsersViaWebSocket(user, chatRoomDTOs);
+        return chatRoomDTOs;
+
     }
 
-    public ChatRoomDTO createChatRoom(User user ,String otherSideUserPhone) {
+    public ChatRoomDTO createChatRoom(User user, String otherSideUserPhone) {
 
         User otherSideUser = userRepository.findByPhone(otherSideUserPhone)
                 .orElseThrow(() -> new RuntimeException("Other side user not found"));
-
+        log.info("1");
         Set<Long> user1Chatrooms = chatroomUserShipRepository.findByUser(user).stream()
                 .map(ChatroomUserShip::getChatroom)
                 .map(ChatRoom::getId)
                 .collect(Collectors.toSet());
-
+        log.info("2");
         Set<Long> user2Chatrooms = chatroomUserShipRepository.findByUser(otherSideUser).stream()
                 .map(ChatroomUserShip::getChatroom)
                 .map(ChatRoom::getId)
                 .collect(Collectors.toSet());
-
+        log.info("3");
         user1Chatrooms.retainAll(user2Chatrooms); // This retains only the common elements, effectively computing the intersection.
-
+        log.info("4");
         ChatRoom chatroom;
         if (user1Chatrooms.isEmpty()) {
             chatroom = new ChatRoom();
             chatRoomRepository.save(chatroom);
-
+            log.info("5");
             ChatroomUserShip ship1 = new ChatroomUserShip(chatroom, user);
             ChatroomUserShip ship2 = new ChatroomUserShip(chatroom, otherSideUser);
             chatroomUserShipRepository.save(ship1);
             chatroomUserShipRepository.save(ship2);
         } else {
+            log.info("6");
             chatroom = chatRoomRepository.findFirstByIdIn(user1Chatrooms);
         }
         // Assuming you have a method to generate presigned URLs similar to the Django version.
         String presignedUrl = s3Service.getPresignedUrl(otherSideUser.getImage());
-
-
+        log.info("7");
 // 3. Convert to DTO and return
-        ChatRoomDTO chatRoomDTO = convertToChatRoomDTO(chatroom,otherSideUser);
+        ChatRoomDTO chatRoomDTO = convertToChatRoomDTO(chatroom, otherSideUser);
         // 2. Setting values on the chatroom object
         chatRoomDTO.setOtherSideUser(otherSideUser);
         chatRoomDTO.setCurrentUser(user);
         chatRoomDTO.setOtherSideImageUrl(presignedUrl);
-
+        chatRoomDTO.setOtherSideAge(userService.getAge(otherSideUser));
+        log.info("8");
+        List<ChatRoomDTO> chatRoomDTOS = new ArrayList<>();
+        chatRoomDTOS.add(chatRoomDTO);
+        // 假设你的ChatRoom实体或DTO有一个方法可以获取所有的participant userIds
         // Perform WebSocket Notification
-        notifyUsersViaWebSocket(chatroom);
-
+        log.info("9");
+        notifyUsersViaWebSocket(user, chatRoomDTOS);
+        log.info("10");
         return chatRoomDTO;
     }
 
-    public List<ChatRoomDTO> deleteUserChatRoom(User user, User otherSideUser,String isChat) {
+    public List<ChatRoomDTO> deleteUserChatRoom(User user, User otherSideUser, String isChat) {
 
 
         Set<Long> chatroomsForUser1 = chatroomUserShipRepository.findByUser(user).stream()
@@ -181,27 +215,27 @@ public class ChatRoomService {
 
         List<ChatRoom> userChatRooms = getChatroomList(user);
 
-
 // 3. Convert to DTO and return
-        List<ChatRoomDTO> chatRoomDTOs = convertToDTO(userChatRooms,user);
+        List<ChatRoomDTO> chatRoomDTOs = convertToDTO(userChatRooms, user);
 
+        notifyUsersViaWebSocket(user, chatRoomDTOs);
 
+        List<ChatRoom> otherSideChatRooms = getChatroomList(otherSideUser);
+        otherSideChatRooms = chatRoomRepository.findChatroomsWithMessagesIn(otherSideChatRooms);
+
+        List<ChatRoomDTO> otherChatRoomDTOs = convertToDTO(otherSideChatRooms, otherSideUser);
+
+        notifyUsersViaWebSocket(otherSideUser, otherChatRoomDTOs);
         // Further logic for updating unread messages, etc. goes here ...
 
         // ... this method gets lengthy because the provided code does a lot. You'd continue converting the logic here.
         return chatRoomDTOs;
     }
 
-    private void notifyUsersViaWebSocket(ChatRoom chatroom) {
-        ChatRoomDTO chatRoomDTO = convertToChatRoomDTO(chatroom, null);
+    private void notifyUsersViaWebSocket(User user, List<ChatRoomDTO> chatRoomDTOs) {
 
-        // 假设你的ChatRoom实体或DTO有一个方法可以获取所有的participant userIds
-
-        List<String> participantUserIds = getParticipantUserIds(chatRoomDTO);
-
-        for (String userId : participantUserIds) {
-            webSocketService.sendChatRoomUpdate(userId, chatRoomDTO);
-        }
+//        }
+        webSocketService.chatrooms(String.valueOf(user.getId()), chatRoomDTOs, Optional.empty());
     }
 
     private ChatRoomDTO convertToChatRoomDTO(ChatRoom chatroom, User otherSideUser) {
@@ -216,12 +250,13 @@ public class ChatRoomService {
         }
         return dto;
     }
-    private List<ChatRoomDTO> convertToDTO(List<ChatRoom> chatRooms,User user) {
+
+    private List<ChatRoomDTO> convertToDTO(List<ChatRoom> chatRooms, User user) {
         List<ChatRoomDTO> chatRoomDTOs = new ArrayList<>();
 
         for (ChatRoom chatRoom : chatRooms) {
             ChatRoomDTO dto = new ChatRoomDTO(chatRoom);
-            User otherSideChatRoomUser = chatRoomRepository.findOtherSideUser(user,chatRoom);
+            User otherSideChatRoomUser = chatRoomRepository.findOtherSideUser(user, chatRoom);
             int unreadCount = chatroomMessageRepository.countByChatroomAndSenderAndIsReadByOtherSideFalse(chatRoom, otherSideChatRoomUser);
 
             if (unreadCount > 0) {
@@ -260,9 +295,9 @@ public class ChatRoomService {
         }
         return chatRoomDTOs;
     }
+
     public LocalDateTime getLastUpdateAt(ChatRoom chatroom) {
-        ChatroomMessage lastMessage = chatroomMessageRepository.findFirstByChatroomOrderByCreateAt(chatroom)
-                .orElse(null);
+        ChatroomMessage lastMessage = chatroomMessageRepository.findFirstByChatroomOrderByCreateAtDesc(chatroom);
         if (lastMessage != null) {
             return lastMessage.getCreateAt();
         }

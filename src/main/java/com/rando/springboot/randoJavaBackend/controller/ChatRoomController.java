@@ -55,13 +55,13 @@ public class ChatRoomController {
     }
 
     @GetMapping("/{chatroomId}/")
-    public ResponseEntity<ChatRoomDTO> retrieveChatRoom(
+    public ResponseEntity<List<ChatRoomDTO>> retrieveChatRoom(
             @PathVariable Long chatroomId,
             HttpServletRequest request
     ) {
         try{
             User user = jwtService.tokenGetUser(request);
-            ChatRoomDTO chatRoom = chatRoomService.retrieveChatRoom(user, chatroomId);
+            List<ChatRoomDTO> chatRoom = chatRoomService.retrieveChatRoom(user, chatroomId);
             return ResponseEntity.ok(chatRoom);
         }catch (Exception e){
                 return new ResponseEntity<>(HttpStatus.FORBIDDEN);
@@ -69,8 +69,9 @@ public class ChatRoomController {
     }
 
     @PostMapping
-    public ResponseEntity<ChatRoomDTO> createChatRoom(@RequestBody String otherSideUserPhone,HttpServletRequest request
+    public ResponseEntity<ChatRoomDTO> createChatRoom(@RequestParam String otherSideUserPhone,HttpServletRequest request
     ) {
+        log.info("TEST");
         try{
             User user = jwtService.tokenGetUser(request);
             return ResponseEntity.ok(chatRoomService.createChatRoom(user,otherSideUserPhone));
@@ -80,7 +81,7 @@ public class ChatRoomController {
 
     }
 
-    @GetMapping("/deleteUserChatRoom")
+    @DeleteMapping
     public ResponseEntity<List<ChatRoomDTO>> deleteUserChatRoom(@RequestParam(name = "is_chat", required = false) String isChat,@RequestBody String otherSideUserPhone,HttpServletRequest request) {
         try{
             User currentUser = jwtService.tokenGetUser(request);

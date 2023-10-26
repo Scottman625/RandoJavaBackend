@@ -30,4 +30,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
 
     List<User> findByIdNotAndGenderNotAndIdNotIn(long id, User.Gender gender, List<Long> pickedUsersIdList);
+
+    @Query("SELECT u FROM User u WHERE u <> ?1 AND u.id IN ?2")
+    User findFirstNotAndIn(User user, List<Long> userIds);
 }

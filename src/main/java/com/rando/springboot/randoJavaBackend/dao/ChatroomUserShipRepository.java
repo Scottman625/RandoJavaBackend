@@ -3,6 +3,7 @@ package com.rando.springboot.randoJavaBackend.dao;
 import com.rando.springboot.randoJavaBackend.entity.ChatRoom;
 import com.rando.springboot.randoJavaBackend.entity.ChatroomUserShip;
 import com.rando.springboot.randoJavaBackend.entity.User;
+import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -23,5 +24,13 @@ public interface ChatroomUserShipRepository extends JpaRepository<ChatroomUserSh
 
     List<ChatroomUserShip> findByUserAndChatroomIdIn(User otherSideUser, Set<Long> chatroomsForUser1);
 
-    List<Long> findChatroomIdsByUser(User user);
+    @Query("SELECT cus.chatroom.id FROM ChatroomUserShip cus WHERE cus.user = :user")
+    List<Long> findChatroomIdsByUser(@Param("user") User user);
+
+
+    ChatroomUserShip findFirstByChatroomAndUserNot(ChatRoom chatRoom,User user);
+
+    List<User> findUsersByChatroom(ChatRoom chatRoom);
+
+    List<ChatroomUserShip> findByChatroom(ChatRoom chatroom);
 }
