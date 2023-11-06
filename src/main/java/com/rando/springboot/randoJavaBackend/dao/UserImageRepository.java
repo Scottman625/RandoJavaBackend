@@ -9,9 +9,11 @@ import java.util.Optional;
 
 public interface UserImageRepository extends JpaRepository<UserImage, Long> {
 
-    UserImage findFirstByUserOrderByUpdateAtDesc(User user);
+//    UserImage findFirstByUserOrderByUpdateAtDesc(User user);
 
     List<UserImage> findByUser(User user);
     Optional<UserImage> findByUserAndId(User user, Long id);
+
+    UserImage findFirstByUserOrderByUpdateAtAsc(User user);
 }
 

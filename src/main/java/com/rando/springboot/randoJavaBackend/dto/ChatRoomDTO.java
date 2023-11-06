@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public class ChatRoomDTO {
-    private ChatRoom chatRoom;
+
     private String otherSideImageUrl;
     private String otherSideName;
     private String lastMessage;
@@ -19,8 +19,7 @@ public class ChatRoomDTO {
     private LocalDateTime updateAt;
     private Integer otherSideAge;
     private String otherSideCareer;
-    private User otherSideUser;  // Assuming you have a UserDTO class
-    private User currentUser;
+    private String otherSideAbout;
     private Integer unreadNums;
     private Long currentUserId;
 
@@ -29,17 +28,7 @@ public class ChatRoomDTO {
     private User otherSideChatRoomUser;
 
     public ChatRoomDTO(ChatRoom chatRoom) {
-        // Here, initialize DTO properties from the ChatRoom entity
-        // This is a basic example; in reality, you'd need more logic especially if
-        // you're fetching related entities or have complex calculations.
-        this.chatRoom = chatRoom;
-        // this.otherSideImageUrl = ...;  // Example: logic to set the image URL
-        // ... Initialize other attributes here ...
 
-        // If you have a relationship set up between ChatRoom and User entities, you can
-        // do something like:
-        // this.otherSideUser = new UserDTO(chatRoom.getOtherSideUser());
-        // this.currentUser = new UserDTO(chatRoom.getCurrentUser());
     }
 
     // Standard getters and setters for each attribute...
@@ -100,21 +89,6 @@ public class ChatRoomDTO {
         this.otherSideCareer = otherSideCareer;
     }
 
-    public User getOtherSideUser() {
-        return otherSideUser;
-    }
-
-    public void setOtherSideUser(User otherSideUser) {
-        this.otherSideUser = otherSideUser;
-    }
-
-    public User getCurrentUser() {
-        return currentUser;
-    }
-
-    public void setCurrentUser(User currentUser) {
-        this.currentUser = currentUser;
-    }
 
     public Integer getUnreadNums() {
         return unreadNums;
@@ -162,12 +136,13 @@ public class ChatRoomDTO {
         this.updateAt = updateAt;
     }
 
-    public ChatRoom getChatRoom() {
-        return chatRoom;
+
+    public String getOtherSideAbout() {
+        return otherSideAbout;
     }
 
-    public void setChatRoom(ChatRoom chatRoom) {
-        this.chatRoom = chatRoom;
+    public void setOtherSideAbout(String otherSideAbout) {
+        this.otherSideAbout = otherSideAbout;
     }
 }
 

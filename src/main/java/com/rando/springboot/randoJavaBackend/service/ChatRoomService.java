@@ -54,14 +54,14 @@ public class ChatRoomService {
         for (ChatRoom chatRoom : chatRooms) {
             ChatRoomDTO dto = new ChatRoomDTO(chatRoom);
             User otherSideUser = chatroomUserShipRepository.findOtherSideUser(chatRoom, user);
-            dto.setOtherSideUser(otherSideUser);
+            dto.setOtherSideAbout(otherSideUser.getAboutMe());
+            log.info("chatRoomId is : " + chatRoom.getId());
+            dto.setChatroomId(chatRoom.getId());
             int unreadCount = chatroomMessageRepository.countByChatroomAndSenderAndIsReadByOtherSide(chatRoom, otherSideUser, false);
             dto.setUnreadNums(unreadCount);
             dto.setOtherSideImageUrl(s3Service.getPresignedUrl(otherSideUser.getImage()));
             dto.setOtherSideName(otherSideUser.getUsername());
             dto.setOtherSideAge(userService.getAge(otherSideUser));
-            dto.setOtherSideCareer(otherSideUser.getCareer());
-            dto.setCurrentUser(user);
             dto.setCurrentUserId(user.getId());
             dto.setCurrentUserImageUrl(s3Service.getPresignedUrl(user.getImage()));
             Optional<ChatroomMessage> lastMessageOptional = chatroomMessageRepository.findTopByChatroomOrderByCreateAtDesc(chatRoom);
@@ -101,7 +101,8 @@ public class ChatRoomService {
         ChatRoomDTO dto = new ChatRoomDTO(chatRoom);
 
         User otherSideUser = chatroomUserShipRepository.findOtherSideUser(chatRoom, user);
-        dto.setOtherSideUser(otherSideUser);
+        dto.setOtherSideAbout(otherSideUser.getAboutMe());
+        dto.setChatroomId(chatRoom.getId());
 
         int unreadCount = chatroomMessageRepository.countByChatroomAndSenderAndIsReadByOtherSide(chatRoom, otherSideUser, false);
         dto.setUnreadNums(unreadCount);
@@ -111,7 +112,6 @@ public class ChatRoomService {
         dto.setOtherSideAge(userService.getAge(otherSideUser));
         dto.setOtherSideCareer(otherSideUser.getCareer());
 
-        dto.setCurrentUser(user);
         dto.setCurrentUserId(user.getId());
         dto.setCurrentUserImageUrl(s3Service.getPresignedUrl(user.getImage()));
 
@@ -145,50 +145,40 @@ public class ChatRoomService {
 
         User otherSideUser = userRepository.findByPhone(otherSideUserPhone)
                 .orElseThrow(() -> new RuntimeException("Other side user not found"));
-        log.info("1");
         Set<Long> user1Chatrooms = chatroomUserShipRepository.findByUser(user).stream()
                 .map(ChatroomUserShip::getChatroom)
                 .map(ChatRoom::getId)
                 .collect(Collectors.toSet());
-        log.info("2");
         Set<Long> user2Chatrooms = chatroomUserShipRepository.findByUser(otherSideUser).stream()
                 .map(ChatroomUserShip::getChatroom)
                 .map(ChatRoom::getId)
                 .collect(Collectors.toSet());
-        log.info("3");
         user1Chatrooms.retainAll(user2Chatrooms); // This retains only the common elements, effectively computing the intersection.
-        log.info("4");
         ChatRoom chatroom;
         if (user1Chatrooms.isEmpty()) {
             chatroom = new ChatRoom();
             chatRoomRepository.save(chatroom);
-            log.info("5");
             ChatroomUserShip ship1 = new ChatroomUserShip(chatroom, user);
             ChatroomUserShip ship2 = new ChatroomUserShip(chatroom, otherSideUser);
             chatroomUserShipRepository.save(ship1);
             chatroomUserShipRepository.save(ship2);
         } else {
-            log.info("6");
             chatroom = chatRoomRepository.findFirstByIdIn(user1Chatrooms);
         }
         // Assuming you have a method to generate presigned URLs similar to the Django version.
         String presignedUrl = s3Service.getPresignedUrl(otherSideUser.getImage());
-        log.info("7");
 // 3. Convert to DTO and return
         ChatRoomDTO chatRoomDTO = convertToChatRoomDTO(chatroom, otherSideUser);
         // 2. Setting values on the chatroom object
-        chatRoomDTO.setOtherSideUser(otherSideUser);
-        chatRoomDTO.setCurrentUser(user);
+        chatRoomDTO.setOtherSideAbout(otherSideUser.getAboutMe());
+        chatRoomDTO.setChatroomId(chatroom.getId());
         chatRoomDTO.setOtherSideImageUrl(presignedUrl);
         chatRoomDTO.setOtherSideAge(userService.getAge(otherSideUser));
-        log.info("8");
         List<ChatRoomDTO> chatRoomDTOS = new ArrayList<>();
         chatRoomDTOS.add(chatRoomDTO);
         // 假设你的ChatRoom实体或DTO有一个方法可以获取所有的participant userIds
         // Perform WebSocket Notification
-        log.info("9");
         notifyUsersViaWebSocket(user, chatRoomDTOS);
-        log.info("10");
         return chatRoomDTO;
     }
 
@@ -233,14 +223,12 @@ public class ChatRoomService {
     }
 
     private void notifyUsersViaWebSocket(User user, List<ChatRoomDTO> chatRoomDTOs) {
-
-//        }
-        webSocketService.chatrooms(String.valueOf(user.getId()), chatRoomDTOs, Optional.empty());
+        webSocketService.chatrooms(String.valueOf(user.getId()), chatRoomDTOs,Optional.empty());
     }
 
     private ChatRoomDTO convertToChatRoomDTO(ChatRoom chatroom, User otherSideUser) {
         ChatRoomDTO dto = new ChatRoomDTO(chatroom);
-        dto.setId(chatroom.getId());
+        dto.setChatroomId(chatroom.getId());
 //        dto.setRoomName(chatroom.getRoomName());
         // ... add other chatroom fields
         if (otherSideUser != null) {
@@ -267,9 +255,6 @@ public class ChatRoomService {
             dto.setOtherSideName(otherSideChatRoomUser.getUsername());
             dto.setOtherSideAge(userService.getAge(otherSideChatRoomUser));
             dto.setOtherSideCareer(otherSideChatRoomUser.getCareer());
-
-            dto.setId(chatRoom.getId());
-            dto.setCurrentUser(user);
             dto.setCurrentUserId(user.getId());
             dto.setCurrentUserImageUrl(user.getImage());
             // ... and so on for other attributes

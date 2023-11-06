@@ -71,9 +71,17 @@ public class ChatroomMessageService {
 
     public void refreshChatMessages(User user, Long chatroomId) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatroomId).orElseThrow(() -> new ResourceNotFoundException("ChatRoom not found"));
-        List<ChatRoom> chatRooms = chatRoomService.getChatroomList(user);
         List<ChatroomMessage> messages = chatroomMessageRepository.findByChatroomOrderByCreateAtAsc(chatRoom);
-        chatroomMessageRepository.markAsReadByOtherSideWhereSenderIsNotUser(chatRoom, user);
+//        chatroomMessageRepository.markAsReadByOtherSideWhereSenderIsNotUser(chatRoom, user);
+        Optional<List<ChatroomMessage>> chatMessages = chatroomMessageRepository.findByChatroomAndSenderNot(chatRoom, user);
+        if (chatMessages.isPresent()){
+            for(ChatroomMessage message:chatMessages.get()){
+                message.setReadByOtherSide(true);
+                chatroomMessageRepository.save(message);
+            }
+        }
+        List<ChatRoom> chatRooms = chatRoomService.getChatroomList(user);
+
         List<ChatRoomDTO> chatRoomDTOS= getChatRoomDTOS(user,chatRooms);
 
         List<User> chatroomUsers = chatroomUserShipRepository.findUsersByChatroom(chatRoom);
@@ -89,7 +97,7 @@ public class ChatroomMessageService {
 
         List<ChatMessageDTO> chatMessageDTOS = getMessageDTOS(user, messages);
         // Assuming ChatRoomDTO and MessageDTO are your DTOs, and you have relevant mappers or converters to convert your entities to these DTOs
-        webSocketService.chatrooms(String.valueOf(user.getId()), chatRoomDTOS, Optional.of(chatMessageDTOS));
+        webSocketService.chatrooms(String.valueOf(user.getId()),chatRoomDTOS, Optional.of(chatMessageDTOS));
         // Add more logic as required from your Django view
     }
 
@@ -181,13 +189,11 @@ public class ChatroomMessageService {
                 List<ChatMessageDTO> chatMessageDTOS = getMessageDTOS(user, messages);
                 List<ChatRoom> chatRooms = chatRoomService.getChatroomList(user);
                 List<ChatRoomDTO> chatRoomDTOS = getChatRoomDTOS(user, chatRooms);
-                webSocketService.chatrooms(String.valueOf(user.getId()), chatRoomDTOS, Optional.of(chatMessageDTOS));
-//                webSocketService.chatrooms(String.valueOf(user.getId()), content);
+                webSocketService.chatrooms(String.valueOf(user.getId()),chatRoomDTOS, Optional.of(chatMessageDTOS));
 
                 List<ChatRoom> otherSideChatRooms = chatRoomService.getChatroomList(otherSideUser);
                 List<ChatRoomDTO> otherSideChatRoomDTOS = getChatRoomDTOS(otherSideUser, otherSideChatRooms);
-                webSocketService.chatrooms(String.valueOf(otherSideUser.getId()), otherSideChatRoomDTOS, Optional.of(chatMessageDTOS));
-//                webSocketService.chatrooms(String.valueOf(otherSideUser.getId()), content);
+                webSocketService.chatrooms(String.valueOf(otherSideUser.getId()), otherSideChatRoomDTOS,Optional.of(chatMessageDTOS));
 
 
                 return chatMessageDTOS;
@@ -232,7 +238,8 @@ public class ChatroomMessageService {
             chatRoomDTO.setOtherSideAge(userService.getAge(otherSideChatroomUser));
             chatRoomDTO.setOtherSideCareer(otherSideChatroomUser.getCareer());
             chatRoomDTO.setCurrentUserId(user.getId());
-            chatRoomDTO.setOtherSideUser(otherSideChatroomUser);
+            chatRoomDTO.setOtherSideAbout(otherSideChatroomUser.getAboutMe());
+            chatRoomDTO.setChatroomId(each_chatroom.getId());
             chatRoomDTOS.add(chatRoomDTO);
 
         }

@@ -51,5 +51,7 @@ public interface ChatroomMessageRepository extends JpaRepository<ChatroomMessage
     ChatroomMessage findFirstByChatroomOrderByCreateAtDesc(ChatRoom chatRoom);
 
     Optional<ChatroomMessage> findTopByChatroomOrderByCreateAtDesc(ChatRoom chatRoom);
+
+    Optional<List<ChatroomMessage>> findByChatroomAndSenderNot(ChatRoom chatroom,User user);
 }
 

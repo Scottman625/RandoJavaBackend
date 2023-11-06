@@ -46,8 +46,13 @@ public class S3Service {
     private final long URL_EXPIRATION_TIME = 3600; // 1 hour
 
     public String getPresignedUrl(String fileName) {
-        fileName = fileName.replace("https://rando-app-bucket.s3.amazonaws.com/", "");
-        String objectKey  = fileName.split("\\?")[0];
+        String replaceFileName;
+        if  (fileName.contains("https://rando-app-bucket.s3.ap-northeast-1.amazonaws.com/")){
+            replaceFileName = fileName.replace("https://rando-app-bucket.s3.ap-northeast-1.amazonaws.com/", "");
+        }else{
+            replaceFileName = fileName.replace("https://rando-app-bucket.s3.amazonaws.com/", "");
+        }
+        String objectKey  = replaceFileName.split("\\?")[0];
 
         try{
             // Check Redis cache first

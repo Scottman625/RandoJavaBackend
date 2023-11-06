@@ -58,19 +58,6 @@ public class WebSocketService {
         messagingTemplate.convertAndSend(destination, payload);
     }
 
-//    public void chatrooms(String roomName, String content) {
-//
-//        String destination = "/topic/" + "chatRoomMessages_" + roomName;
-////        Map<String, Object> payload = new HashMap<>();
-////        payload.put("chatrooms", chatrooms);
-////        optionalMessages.ifPresent(messages -> payload.put("messages", messages));
-//        try {
-//            messagingTemplate.convertAndSend(destination, content);
-//            log.info("Message sent successfully.");
-//        } catch (MessageDeliveryException e) {
-//            log.error("Error sending message to destination: {}", destination, e);
-//        }
-//
-//    }
+
 }
 

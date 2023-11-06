@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static java.lang.System.currentTimeMillis;
@@ -69,19 +70,11 @@ public class UserImageService {
 
     }
 
-    public String storeImage(MultipartFile file,User user) {
+    public UserImage storeImage(MultipartFile file,User user) {
         log.info(file.getOriginalFilename());
         String fileName = "prefix-"+ "-" +currentTimeMillis() + file.getOriginalFilename();
 
         try {
-//            log.info("Test01");
-//            s3Client.putObject(PutObjectRequest.builder()
-//                            .bucket(bucketName)
-//                            .key(fileName)
-//                            .build(),
-//                    RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
-//
-//            log.info("Test02");
 
             String filePath = saveTempFile(file);
 
@@ -98,7 +91,35 @@ public class UserImageService {
             saveUserImage(imageEntity);  // Assuming you have a repository interface for ImageEntity
 
 
-            return fileName;
+            return imageEntity;
+        } catch (IOException e) {
+            throw new ResourceNotFoundException("Failed to store file " + fileName);
+        }
+    }
+
+    public UserImage updateUserImage(MultipartFile file,User user,Long userImageId) {
+        log.info(file.getOriginalFilename());
+        String fileName = "prefix-"+ "-" +currentTimeMillis() + file.getOriginalFilename();
+
+        try {
+
+            String filePath = saveTempFile(file);
+
+            final AmazonS3 s3 = AmazonS3ClientBuilder.standard().withRegion(region).build();
+            String key ="images/" + fileName; // 這裡加上了 "images/" 前綴
+            s3.putObject(bucketName, key, new File(filePath));
+            new File(filePath).delete();
+
+            // If storing the file metadata/path in a database is necessary
+            Optional<UserImage> OptionalImage = userImageRepository.findByUserAndId(user,userImageId);
+            if (OptionalImage.isPresent()){
+                UserImage imageEntity = OptionalImage.get();
+                imageEntity.setImage(s3Service.getPresignedUrl("images/" + fileName));
+                imageEntity.setUser(user);
+                saveUserImage(imageEntity);  // Assuming you have a repository interface for ImageEntity
+                return imageEntity;
+            }
+            throw new ResourceNotFoundException("UserImage not found: " + fileName);
         } catch (IOException e) {
             throw new ResourceNotFoundException("Failed to store file " + fileName);
         }
@@ -116,13 +137,8 @@ public class UserImageService {
     }
 
     public void createUserImage(User user, MultipartFile image) {
-//        UserImage userImage = new UserImage();
-//        // logic to save image...
-//        userImage.setUser(user);
-//        String imageUrl = storeImage(image,user);
-//        userImage.setImage(imageUrl);
-        storeImage(image,user);
-//        return saveUserImage(userImage);
+        UserImage newUserImage = storeImage(image,user);
+        saveUserImage(newUserImage);
     }
 
     public void updateUserImage(User user, Long id, MultipartFile newImage) {
@@ -131,8 +147,8 @@ public class UserImageService {
 
         // 這裡，你可以添加對新的圖片進行處理並更新的邏輯
         // 例如：儲存新的圖片，並更新 existingImage 的相關屬性
-        String imageUrl = storeImage(newImage,user);
-        existingImage.setImage(imageUrl);
+        UserImage newUserImage = storeImage(newImage,user);
+        existingImage.setImage(newUserImage.getImage());
 
 //        return saveUserImage(existingImage);
     }
@@ -140,26 +156,22 @@ public class UserImageService {
     public void deleteUserImage(User user, Long id) {
         UserImage image = userImageRepository.findByUserAndId(user, id)
                 .orElseThrow(() -> new ResourceNotFoundException("Image not found"));
-        deleteUserImage(image);
+        userImageRepository.delete(image);
+        UserImage firsUserImage = userImageRepository.findFirstByUserOrderByUpdateAtAsc(user);
+        if (firsUserImage != null) {
+            user.setImage(firsUserImage.getImage());
+            userRepository.save(user);
+        }
     }
 
     public void saveUserImage(UserImage userImage) {
         UserImage savedImage = userImageRepository.save(userImage);
         User user = savedImage.getUser();
-        user.setImage(savedImage.getImage());  // Assuming the user entity has a setImage method
+        UserImage firstUserImage = userImageRepository.findFirstByUserOrderByUpdateAtAsc(user);
+        user.setImage(firstUserImage.getImage());  // Assuming the user entity has a setImage method
         userRepository.save(user);
         // save the user as well if needed
 //        return savedImage;
-    }
-
-    public void deleteUserImage(UserImage userImage) {
-        userImageRepository.delete(userImage);
-        User user = userImage.getUser();
-        UserImage latestImage = userImageRepository.findFirstByUserOrderByUpdateAtDesc(user);
-        if (latestImage != null) {
-            user.setImage(latestImage.getImage());
-            // save the user as well if needed
-        }
     }
 
     public List<UserImageDTO >convertToUserImageDTOs(User user){
