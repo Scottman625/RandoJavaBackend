@@ -21,8 +21,8 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     ChatRoom findFirstByIdIn(Set<Long> user1Chatrooms);
 
 //    List<ChatRoom> findChatroomsWithMessages(List<Long> chatroomIds);
-    @Query("SELECT cm.chatroom FROM ChatroomMessage cm WHERE cm.chatroom.id in :chatroomIds") // Your JPQL query here
-    List<ChatRoom> findChatroomsWithMessages(@Param("chatroomIds")List<Long> chatroomIds);
+    @Query("SELECT cm.chatroom FROM ChatroomMessage cm WHERE cm.chatroom.id in :chatroomIds order by cm.chatroom.updateAt DESC ") // Your JPQL query here
+    List<ChatRoom> findChatroomsWithMessagesOrderByUpdateAtDesc(@Param("chatroomIds")List<Long> chatroomIds);
 
     @Query("SELECT cus.user FROM ChatroomUserShip cus WHERE cus.chatroom = :chatRoom AND cus.user <> :givenUser")
     User findOtherSideUser(@Param("givenUser") User givenUser, @Param("chatRoom") ChatRoom chatRoom);

@@ -220,7 +220,7 @@ public class ChatroomMessageService {
                 chatRoomDTO.setLastMessageTime(lastMessage.getCreateAt());
                 each_chatroom.setUpdateAt(lastMessage.getCreateAt());
                 chatRoomRepository.save(each_chatroom);
-                if (!lastMessage.getContent().isEmpty()) {
+                if (lastMessage.getContent() != null && !lastMessage.getContent().isEmpty()) {
                     String result = "";
                     if (lastMessage.getContent().length() > 15) {
                         result = lastMessage.getContent().substring(0, 15);
@@ -228,7 +228,7 @@ public class ChatroomMessageService {
                         result = lastMessage.getContent();
                     }
                     chatRoomDTO.setLastMessage(result);
-                } else if (!lastMessage.getImage().isEmpty()) {
+                } else if (lastMessage.getImage() != null && !lastMessage.getImage().isEmpty()) {
                     chatRoomDTO.setLastMessage("已傳送圖片");
                 } else {
                     chatRoomDTO.setLastMessage("");
@@ -251,7 +251,12 @@ public class ChatroomMessageService {
         for (ChatroomMessage message : messages) {
             ChatMessageDTO chatMessageDTO = new ChatMessageDTO();
             chatMessageDTO.setShouldShowTime(shouldShowSendTime(message));
-            chatMessageDTO.setContent(message.getContent());
+            if (message.getContent() != null && !message.getContent().isEmpty()){
+                chatMessageDTO.setContent(message.getContent());
+            } else if (message.getImage() != null && !message.getImage().isEmpty()) {
+                chatMessageDTO.setImageUrl(message.getImage());
+            }
+
             chatMessageDTO.setCreateAt(message.getCreateAt());
             if (message.getSender().getId() == user.getId()) {
                 chatMessageDTO.setMessageIsMine(true);

@@ -33,12 +33,12 @@ public class RandoJavaBackendApplication {
 	private S3Service s3Service;
 
 	public static void main(String[] args) {
-		Dotenv dotenv = Dotenv.load();
-		String accessKey = dotenv.get("AWS_ACCESS_KEY_ID");
-		String secretKey = dotenv.get("AWS_SECRET_ACCESS_KEY");
-
-		System.out.println("Access Key: " + accessKey);
-		System.out.println("Secret Key: " + secretKey);
+//		Dotenv dotenv = Dotenv.load();
+//		String accessKey = dotenv.get("AWS_ACCESS_KEY_ID");
+//		String secretKey = dotenv.get("AWS_SECRET_ACCESS_KEY");
+//
+//		System.out.println("Access Key: " + accessKey);
+//		System.out.println("Secret Key: " + secretKey);
 
 		SpringApplication.run(RandoJavaBackendApplication.class, args);
 	}

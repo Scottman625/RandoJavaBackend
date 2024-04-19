@@ -55,17 +55,23 @@ public class ChatMessageController {
             @RequestParam(name = "image", required = false) MultipartFile image,
             HttpServletRequest request) {
         User user = jwtService.tokenGetUser(request);
-        log.info("a");
-        if(!content.isEmpty()){
+
+        // Check if 'content' is not null and not empty
+        if (content != null && !content.isEmpty()) {
             log.info("b");
-            return ResponseEntity.ok(new ApiResponse<>(chatroomMessageService.postMessage(user, chatroomId,content,null),"Post content success"));
-        } else if (!image.isEmpty()) {
-            log.info("c");
-            return ResponseEntity.ok(new ApiResponse<>(chatroomMessageService.postMessage(user, chatroomId,null,image),"Post image success"));
+            return ResponseEntity.ok(new ApiResponse<>(chatroomMessageService.postMessage(user, chatroomId, content, null), "Post content success"));
         }
+
+        // Check if 'image' is not null and not empty
+        if (image != null && !image.isEmpty()) {
+            log.info("c");
+            return ResponseEntity.ok(new ApiResponse<>(chatroomMessageService.postMessage(user, chatroomId, null, image), "Post image success"));
+        }
+
         log.info("d");
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ApiResponse<>(null,"Failed to post message"));
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ApiResponse<>(null, "Failed to post message"));
     }
+
 
 }
 

@@ -291,7 +291,7 @@ public class ChatRoomService {
 
     public List<ChatRoom> getChatroomList(User user) {
         List<Long> chatroomIds = chatroomUserShipRepository.findChatroomIdsByUser(user);
-        return chatRoomRepository.findChatroomsWithMessages(chatroomIds);
+        return chatRoomRepository.findChatroomsWithMessagesOrderByUpdateAtDesc(chatroomIds);
     }
 
     public List<String> getParticipantUserIds(ChatRoomDTO chatRoomDTO) {
