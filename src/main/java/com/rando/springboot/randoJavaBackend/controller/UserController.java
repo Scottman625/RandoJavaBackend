@@ -68,7 +68,7 @@ public class UserController {
     }
 
     @GetMapping("/get_user_id/")
-    public ResponseEntity<Long> getUserId(HttpServletRequest request) {
+    public ResponseEntity<?> getUserId(HttpServletRequest request) {
         try {
             User user = jwtService.tokenGetUser(request);
             return ResponseEntity.ok(user.getId());
