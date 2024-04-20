@@ -150,7 +150,7 @@ public class ChatroomMessageService {
             chatRoom = chatRoomRepository.findById(chatroomId).get();
             List<ChatroomUserShip> ships = chatroomUserShipRepository.findByChatroom(chatRoom);
             List<Long> chatroomUserIds = ships.stream().map(ship -> ship.getUser().getId()).toList();
-;
+            ;
             if(chatroomUserIds.contains(user.getId())){
                 User otherSideUser = userRepository.findFirstNotAndIn(user,chatroomUserIds);
                 ChatroomMessage newMessage = new ChatroomMessage();
@@ -182,14 +182,11 @@ public class ChatroomMessageService {
                 }
                 chatroomMessageRepository.save(newMessage);
                 chatRoom.setUpdateAt(LocalDateTime.now());
-//                List<ChatroomMessage> messages = chatroomMessageRepository.findByChatroomOrderByCreateAtAsc(chatRoom);
+                List<ChatroomMessage> messages = chatroomMessageRepository.findByChatroomOrderByCreateAtAsc(chatRoom);
 
 
 
-//                List<ChatMessageDTO> chatMessageDTOS = getMessageDTOS(user, messages);
-                ChatMessageDTO chatMessageDTO = getMessageDTO(user,newMessage);
-                List<ChatMessageDTO> chatMessageDTOS = new ArrayList<>();
-                chatMessageDTOS.add(chatMessageDTO);
+                List<ChatMessageDTO> chatMessageDTOS = getMessageDTOS(user, messages);
                 List<ChatRoom> chatRooms = chatRoomService.getChatroomList(user);
                 List<ChatRoomDTO> chatRoomDTOS = getChatRoomDTOS(user, chatRooms);
                 webSocketService.chatrooms(String.valueOf(user.getId()),chatRoomDTOS, Optional.of(chatMessageDTOS));
@@ -204,22 +201,6 @@ public class ChatroomMessageService {
             //... your code using chatRoom
         }
         return null;
-    }
-
-    private ChatMessageDTO getMessageDTO(User user, ChatroomMessage message) {
-        ChatMessageDTO chatMessageDTO = new ChatMessageDTO();
-        chatMessageDTO.setShouldShowTime(shouldShowSendTime(message));
-        if (message.getContent() != null && !message.getContent().isEmpty()){
-            chatMessageDTO.setContent(message.getContent());
-        } else if (message.getImage() != null && !message.getImage().isEmpty()) {
-            chatMessageDTO.setImageUrl(message.getImage());
-        }
-
-        chatMessageDTO.setCreateAt(message.getCreateAt());
-        if (message.getSender().getId() == user.getId()) {
-            chatMessageDTO.setMessageIsMine(true);
-        }
-        return chatMessageDTO;
     }
 
     @NotNull
