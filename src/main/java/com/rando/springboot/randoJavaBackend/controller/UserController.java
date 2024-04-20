@@ -67,6 +67,16 @@ public class UserController {
         }
     }
 
+    @GetMapping("/get_user_id/")
+    public ResponseEntity<Long> getUserId(HttpServletRequest request) {
+        try {
+            User user = jwtService.tokenGetUser(request);
+            return ResponseEntity.ok(user.getId());
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+    }
+
     @GetMapping("/me/")
     public ResponseEntity<UserDTO> getMe(HttpServletRequest request) {
         try {
@@ -78,8 +88,6 @@ public class UserController {
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
-
-
     }
 
     @GetMapping("/get_user/")
