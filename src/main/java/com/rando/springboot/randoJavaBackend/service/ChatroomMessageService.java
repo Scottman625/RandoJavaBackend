@@ -219,6 +219,7 @@ public class ChatroomMessageService {
         if (message.getSender().getId() == user.getId()) {
             chatMessageDTO.setMessageIsMine(true);
         }
+        return chatMessageDTO;
     }
 
     @NotNull
