@@ -15,7 +15,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     Optional<User> findByPhone(String phone);
     User findByUsername(String username);
     User findById(int id);
-    User findByPhoneAndPassword(String phone,String password);
+//    User findByPhoneAndPassword(String phone,String password);
     @Query("SELECT DISTINCT u FROM User u WHERE " +
             "(u IN (SELECT m.user1 FROM UserMatch m WHERE m IN :matchesWithoutMessages) OR " +
             " u IN (SELECT m.user2 FROM UserMatch m WHERE m IN :matchesWithoutMessages)) " +

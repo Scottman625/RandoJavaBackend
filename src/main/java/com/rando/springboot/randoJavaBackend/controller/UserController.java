@@ -20,9 +20,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/user")
 public class UserController {
-
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
-
 
     @Autowired
     private UserService userService;
@@ -34,20 +32,21 @@ public class UserController {
     private JwtService jwtService;  // 這個是用來處理JWT的組件，您可能需要自己實現。
 
     @PostMapping("/register/")
-    public ResponseEntity<ApiResponse<Map<String, String>>> register(@RequestParam String phone, @RequestParam String password) {
-        User existingUser = userService.findByPhoneAndPassword(phone, password);
+    public ResponseEntity<ApiResponse<Map<String, String>>> register(@RequestParam String phone,@RequestParam String username, @RequestParam String password) {
+        User existingUser = userService.findByPhone(phone);
         if (existingUser != null) {
+            log.info("This phone number is already been used.");
             return new ResponseEntity<>(new ApiResponse<>(null, "This phone number is already been used."), HttpStatus.UNAUTHORIZED); // 或者其他您希望的錯誤響應
         }
-        User newUser = userService.createUser(phone, password);
+        User newUser = userService.createUser(phone, username, password);
         if (newUser != null) {
-            String username = "New User" + newUser.getId();
-            String token = jwtTokenProvider.createToken(username);
+            String userphone = newUser.getPhone();
+            String token = jwtTokenProvider.createToken(userphone);
             Map<String, String> tokenMap = new HashMap<>();
             tokenMap.put("token", token);
             return new ResponseEntity<>(new ApiResponse<>(tokenMap, "success login"), HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(new ApiResponse<>(null, "login failed"), HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(new ApiResponse<>(null, "register failed"), HttpStatus.UNAUTHORIZED);
         }
 //        return ResponseEntity.ok(newUser);
     }
@@ -68,10 +67,17 @@ public class UserController {
     }
 
     @GetMapping("/get_user_id/")
-    public ResponseEntity<?> getUserId(HttpServletRequest request) {
+    public ResponseEntity<ApiResponse<Map<String, String>>> getUserId(HttpServletRequest request) {
+
         try {
+            log.info("getUserId");
             User user = jwtService.tokenGetUser(request);
-            return ResponseEntity.ok(user.getId());
+
+            Map<String, String> userIdMap = new HashMap<>();
+            String userId = Long.toString(user.getId());
+            log.info("userId: " + userId);
+            userIdMap.put("userId", userId);
+            return  new ResponseEntity<>(new ApiResponse<>(userIdMap, "success getUserId"), HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
@@ -79,6 +85,7 @@ public class UserController {
 
     @GetMapping("/me/")
     public ResponseEntity<UserDTO> getMe(HttpServletRequest request) {
+
         try {
             User user = jwtService.tokenGetUser(request);
             UserDTO userDTO = userService.convertToUserDTO(user);
@@ -92,6 +99,7 @@ public class UserController {
 
     @GetMapping("/get_user/")
     public ResponseEntity<UserDTO> getUser(HttpServletRequest request) {
+
         try {
             User user = jwtService.tokenGetUser(request);
             UserDTO userDTO = userService.convertToUserDTO(user);

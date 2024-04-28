@@ -1,5 +1,6 @@
 package com.rando.springboot.randoJavaBackend.service;
 
+import com.rando.springboot.randoJavaBackend.controller.UserController;
 import com.rando.springboot.randoJavaBackend.dao.*;
 import com.rando.springboot.randoJavaBackend.dto.ChatRoomDTO;
 import com.rando.springboot.randoJavaBackend.dto.UserDTO;
@@ -7,6 +8,8 @@ import com.rando.springboot.randoJavaBackend.dto.UserImageDTO;
 import com.rando.springboot.randoJavaBackend.entity.User;
 import com.rando.springboot.randoJavaBackend.entity.UserImage;
 import com.rando.springboot.randoJavaBackend.entity.UserMatch;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -44,6 +47,7 @@ public class UserService {
 
     @Autowired
     private ChatroomMessageRepository messageRepository;
+    private static final Logger log = LoggerFactory.getLogger(UserController.class);
 
     public int getLikesCount(User user) {
         return userLikeRepository.countByLikedUserAndLikeStatusIsTrue(user);
@@ -157,16 +161,21 @@ public class UserService {
         return null;
     }
 
-    public User createUser(String phone, String password) {
+    public User createUser(String phone,String username, String password) {
         User user = new User();
         user.setPhone(phone);
+        log.info("createUser: " + username);
+        user.setUsername(username);
         String hashedPassword = passwordEncoder.encode(password); // Encrypting the password using bcrypt
         user.setPassword(hashedPassword);
         return userRepository.save(user);
     }
 
-    public User findByPhoneAndPassword(String phone, String password) {
-        return userRepository.findByPhoneAndPassword(phone, password);
+    public User findByPhone(String phone) {
+        if(userRepository.findByPhone(phone).isPresent()){
+            return userRepository.findByPhone(phone).get();
+        }
+        return null;
     }
 
     public User findByUsername(String username) {
