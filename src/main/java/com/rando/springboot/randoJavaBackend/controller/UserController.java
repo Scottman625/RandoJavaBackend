@@ -56,8 +56,8 @@ public class UserController {
 
         User user = userService.validateUser(phone, password);
         if (user != null) {
-            String username = user.getUsername();
-            String token = jwtTokenProvider.createToken(username);
+//            String username = user.getUsername();
+            String token = jwtTokenProvider.createToken(phone);
             Map<String, String> tokenMap = new HashMap<>();
             tokenMap.put("token", token);
             return new ResponseEntity<>(new ApiResponse<>(tokenMap, "success login"), HttpStatus.OK);
