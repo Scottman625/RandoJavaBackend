@@ -216,7 +216,7 @@ public class UserService {
         for(UserImage userImage: userImages){
             UserImageDTO userImageDTO = new UserImageDTO(userImage);
             String newImageUrl = s3Service.getPresignedUrl(userImage.getImage());
-            userImageDTO.setImageUrl(userImage.getImage());
+            userImageDTO.setImageUrl(newImageUrl);
             userImageDTOS.add(userImageDTO);
         }
         dto.setUserImages( userImageDTOS);

@@ -54,27 +54,38 @@ public class S3Service {
         }
         String objectKey  = replaceFileName.split("\\?")[0];
 
-        try{
-            // Check Redis cache first
-            String presignedUrl = redisTemplate.opsForValue().get(objectKey);
+        try {
+            // Check Redis cache for both URL and timestamp
+            String cachedUrl = redisTemplate.opsForValue().get(objectKey);
+            String cachedTimestamp = redisTemplate.opsForValue().get(objectKey + ":timestamp");
 
-            if (presignedUrl == null) {
-                // Generate new presigned URL if not in cache
-                presignedUrl = generatePresignedUrl(objectKey);
+            if (cachedUrl == null || cachedTimestamp == null || isUrlExpired(cachedTimestamp)) {
+                // Generate new presigned URL if not in cache or if it is expired
+                String presignedUrl = generatePresignedUrl(objectKey);
+                String timestamp = String.valueOf(System.currentTimeMillis());
 
-                // Cache the generated URL in Redis
+                // Cache the generated URL and its timestamp in Redis
                 redisTemplate.opsForValue().set(objectKey, presignedUrl, URL_EXPIRATION_TIME, TimeUnit.SECONDS);
+                redisTemplate.opsForValue().set(objectKey + ":timestamp", timestamp, URL_EXPIRATION_TIME, TimeUnit.SECONDS);
+
+                return presignedUrl;
             }
 
-            return presignedUrl;
-        }catch (Exception e){
+            return cachedUrl;
+        } catch (Exception e) {
             log.info(e.getMessage());
-
         }
         return fileName;
     }
 
+    private boolean isUrlExpired(String cachedTimestamp) {
+        long timestamp = Long.parseLong(cachedTimestamp);
+        long currentTime = System.currentTimeMillis();
+        long expirationTimeMillis = URL_EXPIRATION_TIME * 1000;
 
+        // Check if the cached URL is within the safe window (e.g., 5 minutes before actual expiration)
+        return (currentTime - timestamp) > (expirationTimeMillis - (5 * 60 * 1000));
+    }
 
     public String generatePresignedUrl(String objectKey) {
 
