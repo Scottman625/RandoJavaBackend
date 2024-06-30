@@ -184,8 +184,6 @@ public class ChatroomMessageService {
                 chatRoom.setUpdateAt(LocalDateTime.now());
                 List<ChatroomMessage> messages = chatroomMessageRepository.findByChatroomOrderByCreateAtAsc(chatRoom);
 
-
-
                 List<ChatMessageDTO> chatMessageDTOS = getMessageDTOS(user, messages);
                 List<ChatRoom> chatRooms = chatRoomService.getChatroomList(user);
                 ChatRoomDTO chatRoomDTO = getChatRoomDTO(user, chatRoom);
@@ -193,7 +191,8 @@ public class ChatroomMessageService {
 
 //                List<ChatRoom> otherSideChatRooms = chatRoomService.getChatroomList(otherSideUser);
 //                List<ChatRoomDTO> otherSideChatRoomDTOS = getChatRoomDTOS(otherSideUser, otherSideChatRooms);
-                webSocketService.chatrooms(String.valueOf(otherSideUser.getId()), chatRoomDTO,Optional.of(chatMessageDTOS));
+                ChatRoomDTO otherSideChatRoomDTO = getChatRoomDTO(otherSideUser, chatRoom);
+                webSocketService.chatrooms(String.valueOf(otherSideUser.getId()), otherSideChatRoomDTO,Optional.of(chatMessageDTOS));
 
 
                 return chatMessageDTOS;
@@ -204,86 +203,10 @@ public class ChatroomMessageService {
     }
     @NotNull
     private ChatRoomDTO getChatRoomDTO(User user, ChatRoom chatRoom) {
-
-            ChatRoomDTO chatRoomDTO = new ChatRoomDTO(chatRoom);
-            User otherSideChatroomUser = chatroomUserShipRepository.findFirstByChatroomAndUserNot(chatRoom, user).getUser();
-            if (chatroomMessageRepository.countByChatroomAndSenderAndIsReadByOtherSideFalse(chatRoom, otherSideChatroomUser) != 0) {
-                chatRoomDTO.setUnreadNums(chatroomMessageRepository.countByChatroomAndSenderAndIsReadByOtherSideFalse(chatRoom, otherSideChatroomUser));
-            }
-            chatRoomDTO.setOtherSideImageUrl(s3Service.getPresignedUrl(otherSideChatroomUser.getImage()));
-            chatRoomDTO.setOtherSideName(otherSideChatroomUser.getUsername());
-
-            if (chatroomMessageRepository.countByChatroom(chatRoom) > 0) {
-                ChatroomMessage lastMessage = chatroomMessageRepository.findFirstByChatroomOrderByCreateAtDesc(chatRoom);
-                chatRoomDTO.setLastMessageTime(lastMessage.getCreateAt());
-                chatRoom.setUpdateAt(lastMessage.getCreateAt());
-                chatRoomRepository.save(chatRoom);
-                if (lastMessage.getContent() != null && !lastMessage.getContent().isEmpty()) {
-                    String result = "";
-                    if (lastMessage.getContent().length() > 15) {
-                        result = lastMessage.getContent().substring(0, 15);
-                    } else {
-                        result = lastMessage.getContent();
-                    }
-                    chatRoomDTO.setLastMessage(result);
-                } else if (lastMessage.getImage() != null && !lastMessage.getImage().isEmpty()) {
-                    chatRoomDTO.setLastMessage("已傳送圖片");
-                } else {
-                    chatRoomDTO.setLastMessage("");
-                }
-            }
-            chatRoomDTO.setChatroomId(chatRoom.getId());
-            chatRoomDTO.setOtherSideAge(userService.getAge(otherSideChatroomUser));
-            chatRoomDTO.setOtherSideCareer(otherSideChatroomUser.getCareer());
-            chatRoomDTO.setCurrentUserId(user.getId());
-            chatRoomDTO.setOtherSideAbout(otherSideChatroomUser.getAboutMe());
-            chatRoomDTO.setChatroomId(chatRoom.getId());
-            return chatRoomDTO;
+        return ChatRoomService.addDTO(user, chatRoom, chatroomUserShipRepository, chatroomMessageRepository, s3Service, chatRoomRepository, userService);
 
     }
 
-    @NotNull
-    private List<ChatRoomDTO> getChatRoomDTOS(User user, List<ChatRoom> chatRooms) {
-        List<ChatRoomDTO> chatRoomDTOS = new ArrayList<>();
-        for (ChatRoom each_chatroom : chatRooms) {
-            ChatRoomDTO chatRoomDTO = new ChatRoomDTO(each_chatroom);
-            User otherSideChatroomUser = chatroomUserShipRepository.findFirstByChatroomAndUserNot(each_chatroom, user).getUser();
-            if (chatroomMessageRepository.countByChatroomAndSenderAndIsReadByOtherSideFalse(each_chatroom, otherSideChatroomUser) != 0) {
-                chatRoomDTO.setUnreadNums(chatroomMessageRepository.countByChatroomAndSenderAndIsReadByOtherSideFalse(each_chatroom, otherSideChatroomUser));
-            }
-            chatRoomDTO.setOtherSideImageUrl(s3Service.getPresignedUrl(otherSideChatroomUser.getImage()));
-            chatRoomDTO.setOtherSideName(otherSideChatroomUser.getUsername());
-
-            if (chatroomMessageRepository.countByChatroom(each_chatroom) > 0) {
-                ChatroomMessage lastMessage = chatroomMessageRepository.findFirstByChatroomOrderByCreateAtDesc(each_chatroom);
-                chatRoomDTO.setLastMessageTime(lastMessage.getCreateAt());
-                each_chatroom.setUpdateAt(lastMessage.getCreateAt());
-                chatRoomRepository.save(each_chatroom);
-                if (lastMessage.getContent() != null && !lastMessage.getContent().isEmpty()) {
-                    String result = "";
-                    if (lastMessage.getContent().length() > 15) {
-                        result = lastMessage.getContent().substring(0, 15);
-                    } else {
-                        result = lastMessage.getContent();
-                    }
-                    chatRoomDTO.setLastMessage(result);
-                } else if (lastMessage.getImage() != null && !lastMessage.getImage().isEmpty()) {
-                    chatRoomDTO.setLastMessage("已傳送圖片");
-                } else {
-                    chatRoomDTO.setLastMessage("");
-                }
-            }
-            chatRoomDTO.setChatroomId(each_chatroom.getId());
-            chatRoomDTO.setOtherSideAge(userService.getAge(otherSideChatroomUser));
-            chatRoomDTO.setOtherSideCareer(otherSideChatroomUser.getCareer());
-            chatRoomDTO.setCurrentUserId(user.getId());
-            chatRoomDTO.setOtherSideAbout(otherSideChatroomUser.getAboutMe());
-            chatRoomDTO.setChatroomId(each_chatroom.getId());
-            chatRoomDTOS.add(chatRoomDTO);
-
-        }
-        return chatRoomDTOS;
-    }
     @NotNull
     private List<ChatMessageDTO> getMessageDTOS(User user, List<ChatroomMessage> messages) {
         List<ChatMessageDTO> chatMessageDTOS = new ArrayList<>();

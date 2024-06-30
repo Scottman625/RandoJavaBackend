@@ -1,6 +1,7 @@
 package com.rando.springboot.randoJavaBackend.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
 @Entity
@@ -23,6 +24,7 @@ public class ChatroomMessage {
     @JoinColumn(name = "sender_id")
     private User sender;
 
+    @Getter
     @Column(name = "content", columnDefinition = "TEXT")
     private String content;
 
@@ -72,10 +74,6 @@ public class ChatroomMessage {
 
     public void setSender(User sender) {
         this.sender = sender;
-    }
-
-    public String getContent() {
-        return content;
     }
 
     public void setContent(String content) {
