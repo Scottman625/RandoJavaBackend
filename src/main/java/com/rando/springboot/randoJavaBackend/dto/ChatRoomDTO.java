@@ -22,11 +22,9 @@ public class ChatRoomDTO {
     private String otherSideAbout;
     private Integer unreadNums;
     private Long currentUserId;
-
+    private String OtherSideUserInfo;
     private List<String> participantUserIds;
-
     private User otherSideChatRoomUser;
-
     public ChatRoomDTO(ChatRoom chatRoom) {
 
     }
@@ -36,7 +34,6 @@ public class ChatRoomDTO {
     public String getOtherSideImageUrl() {
         return otherSideImageUrl;
     }
-
     public void setOtherSideImageUrl(String otherSideImageUrl) {
         this.otherSideImageUrl = otherSideImageUrl;
     }
@@ -44,7 +41,6 @@ public class ChatRoomDTO {
     public String getOtherSideName() {
         return otherSideName;
     }
-
     public void setOtherSideName(String otherSideName) {
         this.otherSideName = otherSideName;
     }
@@ -52,7 +48,6 @@ public class ChatRoomDTO {
     public String getLastMessage() {
         return lastMessage;
     }
-
     public void setLastMessage(String lastMessage) {
         this.lastMessage = lastMessage;
     }
@@ -60,7 +55,6 @@ public class ChatRoomDTO {
     public Long getChatroomId() {
         return chatroomId;
     }
-
     public void setChatroomId(Long chatroomId) {
         this.chatroomId = chatroomId;
     }
@@ -68,7 +62,6 @@ public class ChatRoomDTO {
     public LocalDateTime getLastMessageTime() {
         return lastMessageTime;
     }
-
     public void setLastMessageTime(LocalDateTime lastMessageTime) {
         this.lastMessageTime = lastMessageTime;
     }
@@ -76,7 +69,6 @@ public class ChatRoomDTO {
     public Integer getOtherSideAge() {
         return otherSideAge;
     }
-
     public void setOtherSideAge(Integer otherSideAge) {
         this.otherSideAge = otherSideAge;
     }
@@ -84,16 +76,13 @@ public class ChatRoomDTO {
     public String getOtherSideCareer() {
         return otherSideCareer;
     }
-
     public void setOtherSideCareer(String otherSideCareer) {
         this.otherSideCareer = otherSideCareer;
     }
 
-
     public Integer getUnreadNums() {
         return unreadNums;
     }
-
     public void setUnreadNums(Integer unreadNums) {
         this.unreadNums = unreadNums;
     }
@@ -101,7 +90,6 @@ public class ChatRoomDTO {
     public Long getCurrentUserId() {
         return currentUserId;
     }
-
     public void setCurrentUserId(Long currentUserId) {
         this.currentUserId = currentUserId;
     }
@@ -111,19 +99,23 @@ public class ChatRoomDTO {
 
     public void setCurrentUserImageUrl(String s) {
     }
-
     public List<String> getParticipantUserIds() {
         return participantUserIds;
     }
-
     public void setParticipantUserIds(List<String> participantUserIds) {
         this.participantUserIds = participantUserIds;
+    }
+
+    public String getOtherSideUserInfo() {
+        return OtherSideUserInfo;
+    }
+    public void setOtherSideUserInfo(String otherSideUserInfo) {
+        OtherSideUserInfo = otherSideUserInfo;
     }
 
     public User getOtherSideChatRoomUser() {
         return otherSideChatRoomUser;
     }
-
     public void setOtherSideChatRoomUser(User otherSideChatRoomUser) {
         this.otherSideChatRoomUser = otherSideChatRoomUser;
     }

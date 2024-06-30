@@ -113,7 +113,8 @@ public class ChatRoomService {
 
         dto.setCurrentUserId(user.getId());
         dto.setCurrentUserImageUrl(s3Service.getPresignedUrl(user.getImage()));
-        dto.setOtherSideChatRoomUser(otherSideUser);
+//        dto.setOtherSideChatRoomUser(otherSideUser);
+        dto.setOtherSideUserInfo(otherSideUser.getAboutMe());
         dto.setChatroomId(chatroomId);
 
         Optional<ChatroomMessage> lastMessageOptional = chatroomMessageRepository.findTopByChatroomOrderByCreateAtDesc(chatRoom);
@@ -258,7 +259,8 @@ public class ChatRoomService {
             dto.setOtherSideCareer(otherSideChatRoomUser.getCareer());
             dto.setCurrentUserId(user.getId());
             dto.setCurrentUserImageUrl(user.getImage());
-            dto.setOtherSideChatRoomUser(otherSideChatRoomUser);
+            dto.setOtherSideUserInfo(otherSideChatRoomUser.getAboutMe());
+//            dto.setOtherSideChatRoomUser(otherSideChatRoomUser);
             dto.setChatroomId(chatRoom.getId());
             // ... and so on for other attributes
 
