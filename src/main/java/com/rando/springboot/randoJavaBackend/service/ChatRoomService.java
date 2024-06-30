@@ -257,6 +257,7 @@ public class ChatRoomService {
             dto.setCurrentUserId(user.getId());
             dto.setCurrentUserImageUrl(user.getImage());
             dto.setOtherSideChatRoomUser(otherSideChatRoomUser);
+            dto.setChatroomId(chatRoom.getId());
             // ... and so on for other attributes
 
             List<ChatroomMessage> messages = chatroomMessageRepository.findByChatroomOrderByCreateAtDesc(chatRoom);
