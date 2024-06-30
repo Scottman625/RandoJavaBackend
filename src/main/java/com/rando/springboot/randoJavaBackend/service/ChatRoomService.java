@@ -113,6 +113,8 @@ public class ChatRoomService {
 
         dto.setCurrentUserId(user.getId());
         dto.setCurrentUserImageUrl(s3Service.getPresignedUrl(user.getImage()));
+        dto.setOtherSideChatRoomUser(otherSideUser);
+        dto.setChatroomId(chatroomId);
 
         Optional<ChatroomMessage> lastMessageOptional = chatroomMessageRepository.findTopByChatroomOrderByCreateAtDesc(chatRoom);
         if (lastMessageOptional.isPresent()) {
