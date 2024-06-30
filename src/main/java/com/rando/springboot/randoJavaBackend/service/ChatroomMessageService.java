@@ -29,9 +29,7 @@ import static org.aspectj.runtime.internal.Conversions.intValue;
 
 @Service
 public class ChatroomMessageService {
-
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
-
 
     @Autowired
     private ChatRoomRepository chatRoomRepository;
@@ -206,7 +204,6 @@ public class ChatroomMessageService {
         return ChatRoomService.addDTO(user, chatRoom, chatroomUserShipRepository, chatroomMessageRepository, s3Service, chatRoomRepository, userService);
 
     }
-
     @NotNull
     private List<ChatMessageDTO> getMessageDTOS(User user, List<ChatroomMessage> messages) {
         List<ChatMessageDTO> chatMessageDTOS = new ArrayList<>();
