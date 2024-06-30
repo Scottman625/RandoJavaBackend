@@ -51,13 +51,12 @@ public class ChatRoomService {
         return getChatRoomDTOS(user,chatRooms);
     }
 
-    public List<ChatRoomDTO> retrieveChatRoom(User user, Long chatroomId) {
+    public ChatRoomDTO retrieveChatRoom(User user, Long chatroomId) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatroomId).orElse(null);
 
         if (chatRoom == null) {
             throw new ResourceNotFoundException("Chat room not found"); // Or handle as per your error management
         }
-        List<ChatRoomDTO> chatRoomDTOs = new ArrayList<>();
 
         ChatRoomDTO dto = new ChatRoomDTO(chatRoom);
 
@@ -92,9 +91,7 @@ public class ChatRoomService {
         dto.setUnreadNums(chatRoomsNotReadMessages);
         dto.setLastMessageTime(getLastUpdateAt(chatRoom));
 
-        chatRoomDTOs.add(dto);
-//        notifyUsersViaWebSocket(user, dto);
-        return chatRoomDTOs;
+        return dto;
 
     }
 

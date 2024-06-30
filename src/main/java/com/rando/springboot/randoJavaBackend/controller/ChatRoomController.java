@@ -55,13 +55,13 @@ public class ChatRoomController {
     }
 
     @GetMapping("/{chatroomId}/")
-    public ResponseEntity<List<ChatRoomDTO>> retrieveChatRoom(
+    public ResponseEntity<ChatRoomDTO> retrieveChatRoom(
             @PathVariable Long chatroomId,
             HttpServletRequest request
     ) {
         try{
             User user = jwtService.tokenGetUser(request);
-            List<ChatRoomDTO> chatRoom = chatRoomService.retrieveChatRoom(user, chatroomId);
+            ChatRoomDTO chatRoom = chatRoomService.retrieveChatRoom(user, chatroomId);
             return ResponseEntity.ok(chatRoom);
         }catch (Exception e){
                 return new ResponseEntity<>(HttpStatus.FORBIDDEN);

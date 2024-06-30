@@ -53,7 +53,7 @@ public class WebSocketService {
 
         String destination = "/topic/" + "chatRoomMessages_" + roomName;
         Map<String, Object> payload = new HashMap<>();
-        payload.put("chatrooms", chatroom);
+        payload.put("chatroom", chatroom);
         optionalMessages.ifPresent(messages -> payload.put("messages", messages));
         messagingTemplate.convertAndSend(destination, payload);
     }
