@@ -260,6 +260,8 @@ public class ChatroomMessageService {
             chatMessageDTO.setCreateAt(message.getCreateAt());
             if (message.getSender().getId() == user.getId()) {
                 chatMessageDTO.setMessageIsMine(true);
+            }else{
+                chatMessageDTO.setMessageIsMine(false);
             }
             chatMessageDTOS.add(chatMessageDTO);
         }

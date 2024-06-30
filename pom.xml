@@ -17,11 +17,12 @@
 		<java.version>17</java.version>
 	</properties>
 	<dependencies>
-		<dependency>
-			<groupId>org.springdoc</groupId>
-			<artifactId>springdoc-openapi-ui</artifactId>
-			<version>1.7.0</version> <!-- 最新版本 -->
-		</dependency>
+		   <dependency>
+		      <groupId>org.springdoc</groupId>
+		      <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+		      <version>2.5.0</version>
+		   </dependency>
+
 
 		<dependency>
 			<groupId>software.amazon.awssdk</groupId>
@@ -119,11 +120,11 @@
 			<version>0.9.1</version>
 		</dependency>
 		<dependency>
-			<groupId>org.testng</groupId>
-			<artifactId>testng</artifactId>
-			<version>RELEASE</version>
-			<scope>compile</scope>
+		    <groupId>org.testng</groupId>
+		    <artifactId>testng</artifactId>
+		    <version>7.4.0</version> <!-- 使用一个具体的版本号 -->
 		</dependency>
+
 
 		<dependency>
 			<groupId>io.github.cdimascio</groupId>
@@ -141,11 +142,7 @@
 			<artifactId>commons-io</artifactId>
 			<version>2.11.0</version>
 		</dependency>
-		<dependency>
-			<groupId>javax.xml.bind</groupId>
-			<artifactId>jaxb-api</artifactId>
-			<version>2.4.0-b180830.0359</version>
-		</dependency>
+
 		<dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-java-sdk-s3</artifactId>
@@ -187,6 +184,7 @@
 
 
 	<build>
+	<defaultGoal>compile</defaultGoal>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
