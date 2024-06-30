@@ -50,42 +50,6 @@ public class ChatRoomService {
             return convertToDTO(chatRooms, user); // Simple conversion if isChat is 'no'
         }
 
-//        for (ChatRoom chatRoom : chatRooms) {
-//            ChatRoomDTO dto = new ChatRoomDTO(chatRoom);
-//            User otherSideUser = chatroomUserShipRepository.findOtherSideUser(chatRoom, user);
-//            dto.setOtherSideAbout(otherSideUser.getAboutMe());
-//            log.info("chatRoomId is : " + chatRoom.getId());
-//            dto.setChatroomId(chatRoom.getId());
-//            int unreadCount = chatroomMessageRepository.countByChatroomAndSenderAndIsReadByOtherSide(chatRoom, otherSideUser, false);
-//            dto.setUnreadNums(unreadCount);
-//            dto.setOtherSideImageUrl(s3Service.getPresignedUrl(otherSideUser.getImage()));
-//            dto.setOtherSideName(otherSideUser.getUsername());
-//            dto.setOtherSideAge(userService.getAge(otherSideUser));
-//            dto.setCurrentUserId(user.getId());
-//            dto.setCurrentUserImageUrl(s3Service.getPresignedUrl(user.getImage()));
-//            Optional<ChatroomMessage> lastMessageOptional = chatroomMessageRepository.findTopByChatroomOrderByCreateAtDesc(chatRoom);
-//            if (lastMessageOptional.isPresent()) {
-//                ChatroomMessage lastMessage = lastMessageOptional.get();
-//                if (lastMessage.getContent() != null && !lastMessage.getContent().isEmpty()) {
-//                    dto.setLastMessage(lastMessage.getContent().substring(0, Math.min(15, lastMessage.getContent().length())));
-//                } else if (lastMessage.getImage() != null && !lastMessage.getImage().isEmpty()) {
-//                    dto.setLastMessage("已傳送圖片");
-//                } else {
-//                    dto.setLastMessage("");
-//                }
-//            } else {
-//                // 如果没有找到最后一条消息，将LastMessage设置为空字符串
-//                dto.setLastMessage("");
-//            }
-//
-//            int chatRoomsNotReadMessages = chatroomMessageRepository.countByChatroomAndIsReadByOtherSideAndSenderNot(chatRoom, false, user);
-//            dto.setUnreadNums(chatRoomsNotReadMessages);
-//            dto.setLastMessageTime(getLastUpdateAt(chatRoom));
-//
-//            chatRoomDTOs.add(dto);
-//
-//        }
-
         return convertToDTO(chatRooms,user);
     }
 
@@ -176,11 +140,11 @@ public class ChatRoomService {
         chatRoomDTO.setChatroomId(chatroom.getId());
         chatRoomDTO.setOtherSideImageUrl(presignedUrl);
         chatRoomDTO.setOtherSideAge(userService.getAge(otherSideUser));
-        List<ChatRoomDTO> chatRoomDTOS = new ArrayList<>();
-        chatRoomDTOS.add(chatRoomDTO);
+//        List<ChatRoomDTO> chatRoomDTOS = new ArrayList<>();
+//        chatRoomDTOS.add(chatRoomDTO);
         // 假设你的ChatRoom实体或DTO有一个方法可以获取所有的participant userIds
         // Perform WebSocket Notification
-        notifyUsersViaWebSocket(user, chatRoomDTOS);
+        notifyUsersViaWebSocket(user, chatRoomDTO);
         return chatRoomDTO;
     }
 
@@ -210,22 +174,22 @@ public class ChatRoomService {
         // 3. Convert to DTO and return
         List<ChatRoomDTO> chatRoomDTOs = convertToDTO(userChatRooms, user);
 
-        notifyUsersViaWebSocket(user, chatRoomDTOs);
+//        notifyUsersViaWebSocket(user, chatRoomDTO);
 
         List<ChatRoom> otherSideChatRooms = getChatroomList(otherSideUser);
         otherSideChatRooms = chatRoomRepository.findChatroomsWithMessagesIn(otherSideChatRooms);
 
         List<ChatRoomDTO> otherChatRoomDTOs = convertToDTO(otherSideChatRooms, otherSideUser);
 
-        notifyUsersViaWebSocket(otherSideUser, otherChatRoomDTOs);
+//        notifyUsersViaWebSocket(otherSideUser, otherChatRoomDTOs);
         // Further logic for updating unread messages, etc. goes here ...
 
         // ... this method gets lengthy because the provided code does a lot. You'd continue converting the logic here.
         return chatRoomDTOs;
     }
 
-    private void notifyUsersViaWebSocket(User user, List<ChatRoomDTO> chatRoomDTOs) {
-        webSocketService.chatrooms(String.valueOf(user.getId()), chatRoomDTOs,Optional.empty());
+    private void notifyUsersViaWebSocket(User user, ChatRoomDTO chatRoomDTO) {
+        webSocketService.chatrooms(String.valueOf(user.getId()), chatRoomDTO,Optional.empty());
     }
 
     private ChatRoomDTO convertToChatRoomDTO(ChatRoom chatroom, User otherSideUser) {

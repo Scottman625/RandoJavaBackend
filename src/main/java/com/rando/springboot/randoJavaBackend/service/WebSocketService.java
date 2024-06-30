@@ -49,11 +49,11 @@ public class WebSocketService {
     private SimpMessagingTemplate messagingTemplate;
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
 
-    public void chatrooms(String roomName, List<ChatRoomDTO> chatrooms, Optional<List<ChatMessageDTO>> optionalMessages) {
+    public void chatrooms(String roomName, ChatRoomDTO chatroom, Optional<List<ChatMessageDTO>> optionalMessages) {
 
         String destination = "/topic/" + "chatRoomMessages_" + roomName;
         Map<String, Object> payload = new HashMap<>();
-        payload.put("chatrooms", chatrooms);
+        payload.put("chatrooms", chatroom);
         optionalMessages.ifPresent(messages -> payload.put("messages", messages));
         messagingTemplate.convertAndSend(destination, payload);
     }

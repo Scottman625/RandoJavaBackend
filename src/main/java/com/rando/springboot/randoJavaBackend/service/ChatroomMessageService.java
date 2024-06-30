@@ -82,7 +82,7 @@ public class ChatroomMessageService {
         }
         List<ChatRoom> chatRooms = chatRoomService.getChatroomList(user);
 
-        List<ChatRoomDTO> chatRoomDTOS= getChatRoomDTOS(user,chatRooms);
+        ChatRoomDTO chatRoomDTO= getChatRoomDTO(user,chatRoom);
 
         List<User> chatroomUsers = chatroomUserShipRepository.findUsersByChatroom(chatRoom);
 
@@ -97,7 +97,7 @@ public class ChatroomMessageService {
 
         List<ChatMessageDTO> chatMessageDTOS = getMessageDTOS(user, messages);
         // Assuming ChatRoomDTO and MessageDTO are your DTOs, and you have relevant mappers or converters to convert your entities to these DTOs
-        webSocketService.chatrooms(String.valueOf(user.getId()),chatRoomDTOS, Optional.of(chatMessageDTOS));
+        webSocketService.chatrooms(String.valueOf(user.getId()),chatRoomDTO, Optional.of(chatMessageDTOS));
         // Add more logic as required from your Django view
     }
 
@@ -188,12 +188,12 @@ public class ChatroomMessageService {
 
                 List<ChatMessageDTO> chatMessageDTOS = getMessageDTOS(user, messages);
                 List<ChatRoom> chatRooms = chatRoomService.getChatroomList(user);
-                List<ChatRoomDTO> chatRoomDTOS = getChatRoomDTOS(user, chatRooms);
-                webSocketService.chatrooms(String.valueOf(user.getId()),chatRoomDTOS, Optional.of(chatMessageDTOS));
+                ChatRoomDTO chatRoomDTO = getChatRoomDTO(user, chatRoom);
+                webSocketService.chatrooms(String.valueOf(user.getId()),chatRoomDTO, Optional.of(chatMessageDTOS));
 
-                List<ChatRoom> otherSideChatRooms = chatRoomService.getChatroomList(otherSideUser);
-                List<ChatRoomDTO> otherSideChatRoomDTOS = getChatRoomDTOS(otherSideUser, otherSideChatRooms);
-                webSocketService.chatrooms(String.valueOf(otherSideUser.getId()), otherSideChatRoomDTOS,Optional.of(chatMessageDTOS));
+//                List<ChatRoom> otherSideChatRooms = chatRoomService.getChatroomList(otherSideUser);
+//                List<ChatRoomDTO> otherSideChatRoomDTOS = getChatRoomDTOS(otherSideUser, otherSideChatRooms);
+                webSocketService.chatrooms(String.valueOf(otherSideUser.getId()), chatRoomDTO,Optional.of(chatMessageDTOS));
 
 
                 return chatMessageDTOS;
@@ -201,6 +201,45 @@ public class ChatroomMessageService {
             //... your code using chatRoom
         }
         return null;
+    }
+    @NotNull
+    private ChatRoomDTO getChatRoomDTO(User user, ChatRoom chatRoom) {
+
+            ChatRoomDTO chatRoomDTO = new ChatRoomDTO(chatRoom);
+            User otherSideChatroomUser = chatroomUserShipRepository.findFirstByChatroomAndUserNot(chatRoom, user).getUser();
+            if (chatroomMessageRepository.countByChatroomAndSenderAndIsReadByOtherSideFalse(chatRoom, otherSideChatroomUser) != 0) {
+                chatRoomDTO.setUnreadNums(chatroomMessageRepository.countByChatroomAndSenderAndIsReadByOtherSideFalse(chatRoom, otherSideChatroomUser));
+            }
+            chatRoomDTO.setOtherSideImageUrl(s3Service.getPresignedUrl(otherSideChatroomUser.getImage()));
+            chatRoomDTO.setOtherSideName(otherSideChatroomUser.getUsername());
+
+            if (chatroomMessageRepository.countByChatroom(chatRoom) > 0) {
+                ChatroomMessage lastMessage = chatroomMessageRepository.findFirstByChatroomOrderByCreateAtDesc(chatRoom);
+                chatRoomDTO.setLastMessageTime(lastMessage.getCreateAt());
+                chatRoom.setUpdateAt(lastMessage.getCreateAt());
+                chatRoomRepository.save(chatRoom);
+                if (lastMessage.getContent() != null && !lastMessage.getContent().isEmpty()) {
+                    String result = "";
+                    if (lastMessage.getContent().length() > 15) {
+                        result = lastMessage.getContent().substring(0, 15);
+                    } else {
+                        result = lastMessage.getContent();
+                    }
+                    chatRoomDTO.setLastMessage(result);
+                } else if (lastMessage.getImage() != null && !lastMessage.getImage().isEmpty()) {
+                    chatRoomDTO.setLastMessage("已傳送圖片");
+                } else {
+                    chatRoomDTO.setLastMessage("");
+                }
+            }
+            chatRoomDTO.setChatroomId(chatRoom.getId());
+            chatRoomDTO.setOtherSideAge(userService.getAge(otherSideChatroomUser));
+            chatRoomDTO.setOtherSideCareer(otherSideChatroomUser.getCareer());
+            chatRoomDTO.setCurrentUserId(user.getId());
+            chatRoomDTO.setOtherSideAbout(otherSideChatroomUser.getAboutMe());
+            chatRoomDTO.setChatroomId(chatRoom.getId());
+            return chatRoomDTO;
+
     }
 
     @NotNull
