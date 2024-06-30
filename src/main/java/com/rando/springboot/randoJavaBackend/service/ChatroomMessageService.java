@@ -126,7 +126,7 @@ public class ChatroomMessageService {
                     chatMessageDTO.setCreateAt(message.getCreateAt());
 
                     chatMessageDTO.setShouldShowTime(shouldShowSendTime(message));
-
+                    chatMessageDTO.setMessageIsMine(message.getSender().getId() == user.getId());
 
                     if (message.getImage() != null && !message.getImage().trim().isEmpty()) {
                         chatMessageDTO.setImageUrl(s3Service.getPresignedUrl(message.getImage()));
@@ -258,11 +258,7 @@ public class ChatroomMessageService {
             }
 
             chatMessageDTO.setCreateAt(message.getCreateAt());
-            if (message.getSender().getId() == user.getId()) {
-                chatMessageDTO.setMessageIsMine(true);
-            }else{
-                chatMessageDTO.setMessageIsMine(false);
-            }
+            chatMessageDTO.setMessageIsMine(message.getSender().getId() == user.getId());
             chatMessageDTOS.add(chatMessageDTO);
         }
         return chatMessageDTOS;
