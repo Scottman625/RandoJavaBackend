@@ -93,7 +93,7 @@ public class ChatRoomService {
         dto.setLastMessageTime(getLastUpdateAt(chatRoom));
 
         chatRoomDTOs.add(dto);
-        notifyUsersViaWebSocket(user, dto);
+//        notifyUsersViaWebSocket(user, dto);
         return chatRoomDTOs;
 
     }
