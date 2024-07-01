@@ -213,7 +213,7 @@ public class ChatroomMessageService {
             if (message.getContent() != null && !message.getContent().isEmpty()){
                 chatMessageDTO.setContent(message.getContent());
             } else if (message.getImage() != null && !message.getImage().isEmpty()) {
-                chatMessageDTO.setImageUrl(message.getImage());
+                chatMessageDTO.setImageUrl(s3Service.getPresignedUrl(message.getImage()));
             }
 
             chatMessageDTO.setCreateAt(message.getCreateAt());
