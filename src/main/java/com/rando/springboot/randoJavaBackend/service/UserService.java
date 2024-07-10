@@ -31,9 +31,6 @@ public class UserService {
     private UserImageRepository userImageRepository;
 
     @Autowired
-    private UserImageService userImageService;
-
-    @Autowired
     private S3Service s3Service; // The S3Service we defined previously
 
     @Autowired
